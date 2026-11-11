@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Dynamic SEO Meta Tags -->
+    <title>Watch Drama - DramaStream</title>
+    <meta name="description" content="Watch free short dramas online">
+    <meta name="keywords" content="short drama, free drama, watch online, streaming">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="video.tv_show">
+    <meta property="og:title" content="Watch Drama - DramaStream">
+    <meta property="og:description" content="Watch free short dramas online">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="">
+    <meta property="og:site_name" content="DramaStream">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Watch Drama - DramaStream">
+    <meta name="twitter:description" content="Watch free short dramas online">
+    <meta name="twitter:image" content="">
+
+    <!-- Structured Data for Rich Snippets -->
+    <script type="application/ld+json" id="structuredData">
+    {
+        "@context": "https://schema.org",
+        "@type": "TVSeries",
+        "name": "Drama Title",
+        "description": "Drama description",
+        "genre": ["Drama"],
+        "numberOfEpisodes": 0,
+        "url": "",
+        "image": "",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "0",
+            "bestRating": "10"
+        }
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="data.js"></script>
+    <style>
+        :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-primary); color: var(--text-primary); line-height: 1.6; }
+        header { background-color: var(--bg-secondary); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: 1px solid var(--text-secondary); color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-bottom: 1.5rem; text-decoration: none; transition: all 0.2s; }
+        .back-btn:hover { background: var(--bg-secondary); border-color: var(--text-primary); }
+
+        /* Two-column layout */
+        .main-layout { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; }
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+
+        .video-wrapper { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.6); aspect-ratio: 16/9; position: relative; margin-bottom: 1.5rem; }
+        video { width: 100%; height: 100%; display: block; background: #000; }
+
+        /* Episode Section - Above Title */
+        .episode-section { background: var(--bg-secondary); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid #333; }
+        .episode-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .episode-header h3 { font-size: 1.2rem; }
+        .episode-count { color: var(--accent); font-size: 0.9rem; }
+
+        .episode-navigation { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+        .nav-btn { padding: 0.75rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .nav-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+        .episode-select { flex: 1; padding: 0.75rem; background: var(--bg-primary); color: var(--text-primary); border: 1px solid #333; border-radius: 6px; font-size: 1rem; cursor: pointer; min-width: 150px; }
+
+        .episode-toggle { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .episode-toggle:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+        .episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .episode-btn { padding: 0.75rem 0.5rem; background: var(--bg-primary); color: var(--text-primary); border: 1px solid #333; border-radius: 6px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; }
+        .episode-btn:hover:not(:disabled) { background: #2a2a2a; border-color: #555; transform: translateY(-2px); }
+        .episode-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: bold; }
+        .episode-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .episode-grid.collapsed { display: none; }
+
+        /* Drama Info */
+        .drama-info { margin-bottom: 2rem; }
+        .drama-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 0.5rem; margin-top: 0.5rem; }
+
+        .meta-info { display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
+        .meta-info span { color: var(--text-secondary); font-size: 0.9rem; }
+        .meta-info strong { color: var(--text-primary); }
+
+        .genre-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+        .genre-tag { font-size: 0.8rem; background: #333; color: #ddd; padding: 4px 10px; border-radius: 4px; }
+
+        .drama-description { color: var(--text-secondary); font-size: 1rem; line-height: 1.7; margin-bottom: 1rem; }
+        .drama-about { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #333; }
+
+        .platform-info { color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #333; }
+        .platform-info strong { color: var(--text-primary); }
+
+        /* Sidebar */
+        .sidebar { position: sticky; top: 80px; height: fit-content; }
+        .sidebar-ad { background: var(--bg-secondary); border: 1px dashed #444; border-radius: 8px; padding: 1rem; text-align: center; min-height: 250px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 1rem; }
+
+        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.2rem; pointer-events: none; }
+        .error-msg { color: #ff4444; text-align: center; padding: 2rem; font-size: 1.1rem; background: #2a1a1a; border-radius: 8px; border: 1px solid #ff4444; }
+
+        @media (max-width: 768px) {
+            .episode-grid { grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); }
+            .drama-title { font-size: 1.4rem; }
+            .sidebar { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a class="logo" href="index.html">🎬 DramaStream</a>
+    </header>
+
+    <div class="container">
+        <a class="back-btn" href="index.html">← Back to Browse</a>
+
+        <div class="main-layout">
+            <!-- Main Content (Left Column) -->
+            <div class="main-content">
+
+                <!-- 1. Video Player -->
+                <div class="video-wrapper">
+                    <div class="loading" id="loadingText">Loading video...</div>
+                    <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
+                </div>
+
+                <!-- 2. Episode Section (Above Title) -->
+                <div class="episode-section">
+                    <div class="episode-header">
+                        <h3>Episodes <span class="episode-count" id="episodeCount"></span></h3>
+                        <button class="episode-toggle" onclick="toggleEpisodes()">Hide episodes ^</button>
+                    </div>
+
+                    <div class="episode-navigation">
+                        <button class="nav-btn" id="prevBtn" onclick="changeEpisode(-1)">⏮ Previous</button>
+                        <select class="episode-select" id="episodeSelect" onchange="jumpToEpisode(this.value)"></select>
+                        <button class="nav-btn" id="nextBtn" onclick="changeEpisode(1)">Next ⏭</button>
+                    </div>
+
+                    <div class="episode-grid" id="episodeGrid"></div>
+                </div>
+
+                <!-- 3. Drama Information (Below Episodes) -->
+                <div class="drama-info">
+                    <h1 class="drama-title" id="playerTitle"></h1>
+
+                    <div class="meta-info" id="metaInfo"></div>
+
+                    <div class="genre-tags" id="playerGenres"></div>
+
+                    <p class="drama-description" id="playerDesc"></p>
+
+                    <div class="drama-about" id="playerAbout" style="display: none;"></div>
+
+                    <div class="platform-info">
+                        Platform: <strong id="playerPlatform"></strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar (Right Column) - For Ads -->
+            <aside class="sidebar">
+                <div class="sidebar-ad">
+                    <!-- PASTE YOUR SIDEBAR AD CODE HERE -->
+                    <span>Advertisement<br>(300x250)</span>
+                </div>
+
+                <div class="sidebar-ad">
+                    <!-- PASTE YOUR SECOND SIDEBAR AD CODE HERE -->
+                    <span>Advertisement<br>(300x600)</span>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        let currentDrama = null;
+        let currentEpisode = 1;
+        let hls = null;
+        // Resolved episode sources: sources[mirrorIndex][episodeIndex] -> m3u8 URL
+        let sources = [];
+        let activeMirror = 0;
+
+        /* ============================================
+           EPISODE SOURCE RESOLUTION
+           Priority:
+             1. drama.urls            (episode URLs embedded in data.js)
+             2. eps/chunk-N.js        (lazy-loaded episode files, window.DB_EPS)
+           Each level may contain multiple mirrors; if one mirror fails
+           at playback time we automatically try the next one.
+           ============================================ */
+
+        window.DB_EPS = window.DB_EPS || {};
+        const chunkCache = {};
+
+        function loadChunkScript(n) {
+            if (chunkCache[n]) return chunkCache[n];
+            chunkCache[n] = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = `eps/chunk-${n}.js`;
+                s.onload = resolve;
+                s.onerror = () => reject(new Error(`Could not load eps/chunk-${n}.js (is the eps folder uploaded next to watch.html?)`));
+                document.head.appendChild(s);
+            });
+            return chunkCache[n];
+        }
+
+        async function resolveSources(drama) {
+            if (drama.urls && drama.urls.length) return [drama.urls];
+
+            if (drama.epsChunk) {
+                try { await loadChunkScript(drama.epsChunk); } catch (e) { throw e; }
+                const rec = window.DB_EPS[drama.slug];
+                // chunk files store {"slug": [ep1url, ep2url, ...]} — one flat
+                // array (first mirror). Wrap it as [[...]] so mirror handling
+                // stays uniform; tolerate nested arrays just in case.
+                if (Array.isArray(rec) && rec.length) return Array.isArray(rec[0]) ? rec : [rec];
+                if (rec && rec.mirrors && rec.mirrors.length) return rec.mirrors;
+            }
+            return [];
+        }
+
+        function candidatesFor(episode) {
+            // One playable URL per mirror for this episode
+            return sources.map(m => m[episode - 1]).filter(Boolean);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug');
+
+            if (slug) {
+                const drama = dramas.find(d => d.slug === slug);
+                if (drama) {
+                    loadPlayer(drama);
+                    updateSEO(drama);
+                } else {
+                    document.getElementById('playerTitle').textContent = "Drama Not Found";
+                    document.getElementById('playerDesc').innerHTML = '<div class="error-msg">The requested drama could not be found. <a href="index.html" style="color: var(--accent);">Return to Homepage</a></div>';
+                    document.getElementById('loadingText').style.display = 'none';
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        function toggleEpisodes() {
+            const grid = document.getElementById('episodeGrid');
+            const toggle = document.querySelector('.episode-toggle');
+            grid.classList.toggle('collapsed');
+            toggle.textContent = grid.classList.contains('collapsed') ? 'Show episodes v' : 'Hide episodes ^';
+        }
+
+        function updateSEO(drama) {
+            const title = `Watch ${drama.title} - ${drama.episodes} Episodes Free | DramaStream`;
+            document.title = title;
+
+            const description = drama.description || drama.about || `Watch ${drama.title} free online. ${drama.episodes} episodes available on DramaStream.`;
+            document.querySelector('meta[name="description"]').setAttribute('content', description);
+
+            const keywords = `${drama.title}, ${drama.platform}, short drama, free drama, watch online, ${(drama.genres || []).join(', ')}`;
+            document.querySelector('meta[name="keywords"]').setAttribute('content', keywords);
+
+            const canonicalUrl = `${window.location.origin}${window.location.pathname}?slug=${drama.slug}`;
+            document.querySelector('link[rel="canonical"]').setAttribute('href', canonicalUrl);
+
+            document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+            document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+            document.querySelector('meta[property="og:image"]').setAttribute('content', drama.cover);
+            document.querySelector('meta[property="og:url"]').setAttribute('content', canonicalUrl);
+
+            document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
+            document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
+            document.querySelector('meta[name="twitter:image"]').setAttribute('content', drama.cover);
+
+            const structuredData = {
+                "@context": "https://schema.org",
+                "@type": "TVSeries",
+                "name": drama.title,
+                "description": description,
+                "genre": drama.genres || [],
+                "numberOfEpisodes": drama.episodes,
+                "url": canonicalUrl,
+                "image": drama.cover,
+                "aggregateRating": drama.rating ? {
+                    "@type": "AggregateRating",
+                    "ratingValue": drama.rating.toString(),
+                    "bestRating": "10"
+                } : undefined,
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "DramaStream",
+                    "url": window.location.origin
+                }
+            };
+
+            document.getElementById('structuredData').textContent = JSON.stringify(structuredData, null, 2);
+        }
+
+        function showMsg(text, color) {
+            const el = document.getElementById('loadingText');
+            el.style.display = 'block';
+            el.textContent = text;
+            el.style.color = color || 'white';
+        }
+
+        function hideMsg() {
+            document.getElementById('loadingText').style.display = 'none';
+        }
+
+        async function loadPlayer(drama) {
+            currentDrama = drama;
+            currentEpisode = 1;
+            activeMirror = 0;
+
+            document.getElementById('playerTitle').textContent = drama.title;
+            document.getElementById('playerDesc').textContent = drama.description || drama.about || "No description available.";
+            document.getElementById('playerPlatform').textContent = (drama.platform || 'unknown').toUpperCase();
+            document.getElementById('episodeCount').textContent = `(${drama.episodes} episodes)`;
+
+            if (drama.about && drama.about.length > 50) {
+                const aboutEl = document.getElementById('playerAbout');
+                aboutEl.textContent = drama.about;
+                aboutEl.style.display = 'block';
+            }
+
+            const metaInfo = document.getElementById('metaInfo');
+            const metaParts = [];
+            if (drama.rating) metaParts.push(`<span><strong>Rating:</strong> ${drama.rating}/10</span>`);
+            if (drama.releaseDate) metaParts.push(`<span><strong>Released:</strong> ${drama.releaseDate}</span>`);
+            metaParts.push(`<span><strong>${drama.episodes} Episodes</strong></span>`);
+            metaInfo.innerHTML = metaParts.join('');
+
+            const genresContainer = document.getElementById('playerGenres');
+            genresContainer.innerHTML = (drama.genres || []).map(g => `<span class="genre-tag">${g}</span>`).join('');
+
+            // Resolve the real episode URLs first (inline or from eps chunk file)
+            showMsg('Loading episodes...');
+            let loadError = false;
+            try {
+                sources = await resolveSources(drama);
+            } catch (e) {
+                sources = [];
+                loadError = true;
+                showMsg('❌ ' + e.message, '#ff4444');
+            }
+
+            const available = sources.length ? sources[0].length : 0;
+            if (!available) {
+                if (loadError) return; // chunk/error message already shown
+                showMsg('This title is in the catalog, but its video source has not been attached yet. Run the dramadunyam console scraper and merge to add its episodes.', '#ffcc66');
+                return;
+            }
+            if (available < drama.episodes) {
+                // Source returned fewer episodes than advertised – only offer what exists
+                document.getElementById('episodeCount').textContent = `(${available} of ${drama.episodes} episodes)`;
+            }
+
+            const select = document.getElementById('episodeSelect');
+            select.innerHTML = '';
+            for (let i = 1; i <= available; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Episode ${i}`;
+                select.appendChild(option);
+            }
+
+            createEpisodeGrid(available);
+            loadVideo(1);
+        }
+
+        function createEpisodeGrid(available) {
+            const grid = document.getElementById('episodeGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= available; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'episode-btn';
+                if (i === currentEpisode) btn.classList.add('active');
+                btn.textContent = i;
+                btn.onclick = () => jumpToEpisode(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateEpisodeButtons(available) {
+            const buttons = document.querySelectorAll('.episode-btn');
+            buttons.forEach((btn, index) => {
+                const epNum = index + 1;
+                btn.classList.toggle('active', epNum === currentEpisode);
+            });
+
+            document.getElementById('prevBtn').disabled = currentEpisode === 1;
+            document.getElementById('nextBtn').disabled = currentEpisode >= available;
+            document.getElementById('episodeSelect').value = currentEpisode;
+        }
+
+        // ==========================================
+        // VIDEO LOADING (per-episode signed URLs with mirror fallback)
+        // ==========================================
+        function destroyHls() {
+            if (hls) { hls.destroy(); hls = null; }
+        }
+
+        function loadVideo(ep) {
+            currentEpisode = parseInt(ep) || 1;
+            activeMirror = 0;
+            const available = sources.length ? sources[0].length : 0;
+            if (currentEpisode > available) currentEpisode = available;
+            updateEpisodeButtons(available);
+            playCurrent();
+        }
+
+        function playCurrent() {
+            const video = document.getElementById('videoPlayer');
+            const candidates = candidatesFor(currentEpisode);
+
+            if (!candidates.length) {
+                showMsg('This episode could not be loaded — its source has not been attached yet or is temporarily unavailable.', '#ffcc66');
+                return;
+            }
+
+            showMsg('Loading video...');
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            destroyHls();
+
+            const url = candidates[activeMirror];
+
+            if (/\.mp4($|\?)/.test(url)) {
+                // Progressive MP4 (e.g. DramaBox CDN links) — play natively,
+                // no hls.js. Same mirror-fallback as the native HLS path.
+                video.addEventListener('error', () => {
+                    if (activeMirror + 1 < candidates.length) {
+                        activeMirror++;
+                        showMsg(`Source failed, trying mirror ${activeMirror + 1}...`);
+                        playCurrent();
+                    } else {
+                        showMsg('❌ Error: Video failed to load. Try another episode or come back later.', '#ff4444');
+                    }
+                }, { once: true });
+                video.src = url;
+                video.addEventListener('loadedmetadata', () => {
+                    hideMsg();
+                    video.play().catch(() => {});
+                }, { once: true });
+                return;
+            }
+
+            if (Hls.isSupported()) {
+                hls = new Hls({ xhrSetup: (xhr) => { xhr.withCredentials = false; } });
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    hideMsg();
+                    video.play().catch(() => {});
+                });
+                hls.on(Hls.Events.FRAG_LOADED, () => hideMsg());
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (!data.fatal) return;
+                    // Try the next mirror before giving up
+                    if (activeMirror + 1 < candidates.length) {
+                        activeMirror++;
+                        showMsg(`Source failed, trying mirror ${activeMirror + 1}...`);
+                        playCurrent();
+                    } else {
+                        showMsg('❌ Error: Video failed to load (' + (data.details || 'network error') + '). Try another episode or come back later.', '#ff4444');
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // iOS / Safari native HLS
+                video.addEventListener('error', () => {
+                    if (activeMirror + 1 < candidates.length) {
+                        activeMirror++;
+                        playCurrent();
+                    } else {
+                        showMsg('❌ Error: Video failed to load.', '#ff4444');
+                    }
+                }, { once: true });
+                video.src = url;
+                video.addEventListener('loadedmetadata', () => {
+                    hideMsg();
+                    video.play().catch(() => {});
+                }, { once: true });
+            } else {
+                showMsg('❌ HLS is not supported in this browser.', '#ff4444');
+            }
+        }
+
+        function changeEpisode(direction) {
+            const available = sources.length ? sources[0].length : 0;
+            const newEp = currentEpisode + direction;
+            if (newEp >= 1 && newEp <= available) loadVideo(newEp);
+        }
+
+        function jumpToEpisode(ep) {
+            loadVideo(parseInt(ep));
+        }
+    </script>
+</body>
+</html>
