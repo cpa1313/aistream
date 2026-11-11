@@ -207,6 +207,33 @@
         window.DB_EPS = window.DB_EPS || {};
         const chunkCache = {};
 
+        /* ============================================
+           SEGMENT PROXY (optional)
+           Some providers (currently flickreels) point video segments at a CDN
+           that returns 403 to any real browser origin — so those videos play
+           locally (file://) but fail on the hosted site. Deploy
+           segment-proxy-worker.js to Cloudflare, then paste its URL below.
+           Example: const SEGMENT_PROXY_BASE = 'https://segment-proxy.you.workers.dev/?u=';
+           ============================================ */
+		const SEGMENT_PROXY_BASE = 'https://segment-proxy.webmasterjamezzz13.workers.dev/';   
+        //const SEGMENT_PROXY_BASE = '';
+        const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net'];
+        function proxiedUrl(url) {
+            if (!SEGMENT_PROXY_BASE) return url;
+            try {
+                return SEGMENT_PROXY_HOSTS.includes(new URL(url, location.href).hostname)
+                    ? SEGMENT_PROXY_BASE + encodeURIComponent(url) : url;
+            } catch { return url; }
+        }
+        const SegmentProxyLoader = (window.Hls && window.Hls.DefaultConfig && window.Hls.DefaultConfig.loader)
+            ? class extends window.Hls.DefaultConfig.loader {
+                load(context, config, callbacks) {
+                    if (context && context.url) context.url = proxiedUrl(context.url);
+                    super.load(context, config, callbacks);
+                }
+            }
+            : null; // hls.js failed to load — fall back to its default loader
+
         function loadChunkScript(n) {
             if (chunkCache[n]) return chunkCache[n];
             chunkCache[n] = new Promise((resolve, reject) => {
@@ -463,7 +490,10 @@
             }
 
             if (Hls.isSupported()) {
-                hls = new Hls({ xhrSetup: (xhr) => { xhr.withCredentials = false; } });
+                hls = new Hls({
+                    xhrSetup: (xhr) => { xhr.withCredentials = false; },
+                    ...(SegmentProxyLoader ? { fLoader: SegmentProxyLoader } : {}),
+                });
                 hls.loadSource(url);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -479,7 +509,13 @@
                         showMsg(`Source failed, trying mirror ${activeMirror + 1}...`);
                         playCurrent();
                     } else {
-                        showMsg('❌ Error: Video failed to load (' + (data.details || 'network error') + '). Try another episode or come back later.', '#ff4444');
+                        let failHost = '';
+                        try { failHost = data.frag && data.frag.url ? new URL(data.frag.url).hostname : ''; } catch {}
+                        if (!SEGMENT_PROXY_BASE && SEGMENT_PROXY_HOSTS.includes(failHost)) {
+                            showMsg('❌ Error: this title\'s video CDN blocks playback from hosted sites. Fix: deploy segment-proxy-worker.js (see README), then set SEGMENT_PROXY_BASE in this file.', '#ff4444');
+                        } else {
+                            showMsg('❌ Error: Video failed to load (' + (data.details || 'network error') + '). Try another episode or come back later.', '#ff4444');
+                        }
                     }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
