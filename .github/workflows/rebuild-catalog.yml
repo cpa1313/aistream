@@ -1,12 +1,14 @@
 name: Rebuild catalog
 
-# Whenever new-videos.json changes, regenerate data-part-3.js and push it.
-# The site deploy (Cloudflare) then picks up the new commit automatically.
+# Whenever new-videos.json changes: first probe the new records' episode URLs
+# (a broken URL turns this run red and nothing is committed — the deployed site
+# is never affected), then regenerate data-part-3.js and push it.
 on:
   push:
     paths:
       - '**/new-videos.json'
       - '**/build_new_part.mjs'
+      - '**/probe_urls.mjs'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Probe episode URLs of new records
+        run: node scripts/probe_urls.mjs
 
       - name: Rebuild data-part-3.js from new-videos.json
         run: node scripts/build_new_part.mjs
