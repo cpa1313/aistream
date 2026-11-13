@@ -115,6 +115,20 @@ if (toProbe.length === 0) {
 // --- probing ---
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
+// Hosts behind aggressive Cloudflare bot challenges: they return 403 to
+// non-browser clients (Actions runners, curl, headless) but stream fine in
+// real browsers — the live catalog already plays 680+ URLs from
+// dramadunyam.com. A 403/503 from these hosts is reported as a WARN
+// ("unverifiable"), NOT a failure — verify those by playback instead.
+const BOT_CHALLENGED_HOSTS = ['dramadunyam.com'];
+const isBotChallenged = url => {
+    try {
+        const h = new URL(url).hostname;
+        return BOT_CHALLENGED_HOSTS.some(host => h === host || h.endsWith('.' + host));
+    } catch { return false; }
+};
+
+
 async function probeUrl(url, { timeout = 10000 } = {}) {
     for (let attempt = 1; attempt <= 2; attempt++) {
         const ctrl = new AbortController();
@@ -153,7 +167,7 @@ async function pool(items, worker, size = 8) {
 
 let okRecs = 0;
 const failures = [];
-let checked = 0, emptyUrls = 0;
+let checked = 0, emptyUrls = 0, unverified = 0;
 
 for (const r of toProbe) {
     const urls = Array.isArray(r.urls) ? r.urls : [];
@@ -171,9 +185,15 @@ for (const r of toProbe) {
             okCount++;
         } else {
             const why = res.error ? res.error : `HTTP ${res.status}`;
-            failures.push({ title: r.title, ep: idx + 1, total: urls.length, why, url: urls[idx] });
-            console.log(`  ✗ FAIL "${r.title}" ep ${idx + 1}/${urls.length} → ${why}`);
-            console.log(`      ${urls[idx]}`);
+            const url = urls[idx];
+            if (!res.error && (res.status === 403 || res.status === 503) && isBotChallenged(url)) {
+                unverified++;
+                console.log(`  ⚠ WARN "${r.title}" ep ${idx + 1}/${urls.length} → ${why} — host challenges bots, unverifiable from Actions (verify by playback)`);
+            } else {
+                failures.push({ title: r.title, ep: idx + 1, total: urls.length, why, url });
+                console.log(`  ✗ FAIL "${r.title}" ep ${idx + 1}/${urls.length} → ${why}`);
+                console.log(`      ${url}`);
+            }
         }
     });
     checked += urls.length;
@@ -184,7 +204,7 @@ for (const r of toProbe) {
 }
 
 console.log(`\nPROBE RESULT: ${toProbe.length} record(s), ${checked} URL(s) checked — `
-    + `${okRecs} record(s) fully OK, ${failures.length} failed, ${emptyUrls} empty (skipped)`);
+    + `${okRecs} record(s) fully OK, ${failures.length} failed, ${emptyUrls} empty (skipped), ${unverified} unverifiable (bot-challenged host)`);
 
 if (failures.length > 0) {
     console.log('\nPROBE FAILED — the catalog was NOT rebuilt and the site was NOT changed.');
