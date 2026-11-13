@@ -550,9 +550,18 @@
             if (newEp >= 1 && newEp <= available) loadVideo(newEp);
         }
 
-        function jumpToEpisode(ep) {
+                function jumpToEpisode(ep) {
             loadVideo(parseInt(ep));
         }
+
+        // Auto-play next episode when the current one finishes
+        document.getElementById('videoPlayer').addEventListener('ended', () => {
+            const available = sources.length ? sources[0].length : 0;
+            if (currentEpisode < available) {
+                loadVideo(currentEpisode + 1);
+                document.getElementById('videoPlayer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
     </script>
 </body>
 </html>
