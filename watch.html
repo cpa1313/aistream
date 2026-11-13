@@ -218,7 +218,7 @@
            Example: const SEGMENT_PROXY_BASE = 'https://segment-proxy.you.workers.dev/?u=';
            (a bare worker URL without the ?u= also works — it is added automatically)
            ============================================ */
-		const SEGMENT_PROXY_BASE = 'https://segment-proxy.webmasterjamezzz13.workers.dev/?u=';   
+        const SEGMENT_PROXY_BASE = '';
         const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net'];
         function proxiedUrl(url) {
             if (!SEGMENT_PROXY_BASE) return url;
@@ -298,6 +298,16 @@
             toggle.textContent = grid.classList.contains('collapsed') ? 'Show episodes v' : 'Hide episodes ^';
         }
 
+        // Normalize genres to plain names: records may store strings, objects
+        // ({name}/{title}/{genre}/{label}) or nothing at all — anything unusable
+        // is dropped so "[object Object]" can never appear.
+        function genreNames(d) {
+            return (d.genres || []).map(g =>
+                typeof g === 'string' ? g
+                    : (g && typeof g === 'object' ? (g.name || g.title || g.genre || g.label || '') : '')
+            ).filter(Boolean);
+        }
+
         function updateSEO(drama) {
             const title = `Watch ${drama.title} - ${drama.episodes} Episodes Free | DramaStream`;
             document.title = title;
@@ -305,7 +315,7 @@
             const description = drama.description || drama.about || `Watch ${drama.title} free online. ${drama.episodes} episodes available on DramaStream.`;
             document.querySelector('meta[name="description"]').setAttribute('content', description);
 
-            const keywords = `${drama.title}, ${drama.platform}, short drama, free drama, watch online, ${(drama.genres || []).join(', ')}`;
+            const keywords = `${drama.title}, ${drama.platform}, short drama, free drama, watch online, ${genreNames(drama).join(', ')}`;
             document.querySelector('meta[name="keywords"]').setAttribute('content', keywords);
 
             const canonicalUrl = `${window.location.origin}${window.location.pathname}?slug=${drama.slug}`;
@@ -325,7 +335,7 @@
                 "@type": "TVSeries",
                 "name": drama.title,
                 "description": description,
-                "genre": drama.genres || [],
+                "genre": genreNames(drama),
                 "numberOfEpisodes": drama.episodes,
                 "url": canonicalUrl,
                 "image": drama.cover,
@@ -379,7 +389,9 @@
             metaInfo.innerHTML = metaParts.join('');
 
             const genresContainer = document.getElementById('playerGenres');
-            genresContainer.innerHTML = (drama.genres || []).map(g => `<a class="genre-tag" href="index.html?genre=${encodeURIComponent(g)}">${g}</a>`).join('');
+            const genreList = genreNames(drama);
+            genresContainer.innerHTML = genreList.map(g => `<a class="genre-tag" href="index.html?genre=${encodeURIComponent(g)}">${g}</a>`).join('');
+            genresContainer.style.display = genreList.length ? '' : 'none';
 
             // Resolve the real episode URLs first (inline or from eps chunk file)
             showMsg('Loading episodes...');
@@ -550,7 +562,7 @@
             if (newEp >= 1 && newEp <= available) loadVideo(newEp);
         }
 
-                function jumpToEpisode(ep) {
+        function jumpToEpisode(ep) {
             loadVideo(parseInt(ep));
         }
 

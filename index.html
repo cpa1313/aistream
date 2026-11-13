@@ -82,9 +82,19 @@
             renderHome();
         }
 
+        // Normalize genres to plain names: records may store strings, objects
+        // ({name}/{title}/{genre}/{label}) or nothing at all — anything unusable
+        // is dropped so "[object Object]" can never appear or crash .toLowerCase().
+        function genreNames(d) {
+            return (d.genres || []).map(g =>
+                typeof g === 'string' ? g
+                    : (g && typeof g === 'object' ? (g.name || g.title || g.genre || g.label || '') : '')
+            ).filter(Boolean);
+        }
+
         function genreCounts() {
             const counts = new Map();
-            dramas.forEach(d => (d.genres || []).forEach(g => counts.set(g, (counts.get(g) || 0) + 1)));
+            dramas.forEach(d => genreNames(d).forEach(g => counts.set(g, (counts.get(g) || 0) + 1)));
             return counts;
         }
 
@@ -142,13 +152,13 @@
             let filtered = dramas;
             if (currentGenre) {
                 const g = currentGenre.toLowerCase();
-                filtered = filtered.filter(d => (d.genres || []).some(x => x.toLowerCase() === g));
+                filtered = filtered.filter(d => genreNames(d).some(x => x.toLowerCase() === g));
             }
             if (currentSearchQuery) {
                 filtered = filtered.filter(d => 
                     d.title.toLowerCase().includes(currentSearchQuery) || 
                     d.platform.toLowerCase().includes(currentSearchQuery) ||
-                    (d.genres && d.genres.some(g => g.toLowerCase().includes(currentSearchQuery)))
+                    genreNames(d).some(g => g.toLowerCase().includes(currentSearchQuery))
                 );
             }
 
@@ -171,7 +181,7 @@
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
                 
-                const genreHtml = (drama.genres || []).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
+                const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
                     <img src="${drama.cover}" alt="${drama.title}" loading="lazy">
                     <div class="drama-info">
@@ -259,7 +269,7 @@
             const wanted = new URLSearchParams(location.search).get('genre');
             if (wanted) {
                 const w = wanted.toLowerCase();
-                const exists = dramas.some(d => (d.genres || []).some(g => g.toLowerCase() === w));
+                const exists = dramas.some(d => genreNames(d).some(g => g.toLowerCase() === w));
                 if (exists) currentGenre = wanted;
             }
             buildGenreBar();
