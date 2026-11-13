@@ -14,6 +14,7 @@ window.DB_DRAMAS_P3.push(
   "Romance"
  ],
  "rating": null,
+ "dateAdded": "2026-11-13",
  "releaseDate": "",
  "source": "dramadunyam",
  "urls": [
