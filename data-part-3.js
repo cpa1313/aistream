@@ -1,6 +1,195 @@
 window.DB_DRAMAS_P3=window.DB_DRAMAS_P3||[];
 window.DB_DRAMAS_P3.push(
 {
+ "id": 229668,
+ "title": "The Heirless Mafia Boss Claimed Me",
+ "slug": "the-heirless-mafia-boss-claimed-me",
+ "platform": "dramabox",
+ "episodes": 50,
+ "cover": "https://dramaflix.net/dfl-media/img/covers/3aebb192917a7cc8/480.webp",
+ "description": "Poor college student Lily is drugged and sent to Victor Rossi, the ruthless mafia boss believed to be infertile, by her boyfriend and best friend. Two months later, she discovers she's pregnant with Victor's child. When her boyfriend tries to kill the baby and sell her off, Victor arrives—and for the first time in ten years, he has something worth protecting.",
+ "about": "",
+ "genres": [
+  {
+   "slug": "betrayal",
+   "name": "Betrayal"
+  },
+  {
+   "slug": "destined-love",
+   "name": "Destined Love"
+  },
+  {
+   "slug": "forced-love",
+   "name": "Forced Love"
+  },
+  {
+   "slug": "mafia",
+   "name": "Mafia"
+  },
+  {
+   "slug": "revenge",
+   "name": "Revenge"
+  },
+  {
+   "slug": "secret-baby",
+   "name": "Secret Baby"
+  }
+ ],
+ "rating": null,
+ "releaseDate": "",
+ "dubbed": false,
+ "source": "dramadunyam",
+ "urls": [
+  "https://hwztakavideoto.dramaboxdb.com/298ef42ef7d936d3a0dec4eeaab6487d/6af890c1/32/1x5/15x7/157x7/15772000024/701622823_1/701622823.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/30af624bbef35b77507be631543be585/6af890c1/42/1x5/15x7/157x7/15772000024/701622824_1/701622824.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/2574b5100b27a05fa5ee25151da145af/6af890c1/52/1x5/15x7/157x7/15772000024/701622825_1/701622825.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/74ed54cdb14fb43e03d320f7500080f0/6af890c1/62/1x5/15x7/157x7/15772000024/701622826_1/701622826.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/ff4309c8aacc668d270a037016a2f9ed/6af890c1/72/1x5/15x7/157x7/15772000024/701622827_1/701622827.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/fa5d75fb1efcc11ede812c437a1de21b/6af890c1/82/1x5/15x7/157x7/15772000024/701622828_1/701622828.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/a728a9528ea6bd8b33cf7b96e9001b99/6af890c1/92/1x5/15x7/157x7/15772000024/701622829_1/701622829.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/5d5da8017133432101dc14a2b0cd0d20/6af890c1/03/1x5/15x7/157x7/15772000024/701622830_1/701622830.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/671508696050d8ff6abd7bdad5b5ff48/6af890c1/13/1x5/15x7/157x7/15772000024/701622831_1/701622831.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/962502e4de943e110a0c348d41e15849/6af890c1/23/1x5/15x7/157x7/15772000024/701622832_1/701622832.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/d87c3d6e9090e7e28329a4e2fe70cf5b/6af890c1/33/1x5/15x7/157x7/15772000024/701622833_1/701622833.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/d2c7761d0d3753adc772177c4765c1f0/6af890c1/43/1x5/15x7/157x7/15772000024/701622834_1/701622834.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/3856ea7dc74f28473611895fcc4da8e4/6af890c1/53/1x5/15x7/157x7/15772000024/701622835_1/701622835.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/de3ce1940e67bed85362955faa04296b/6af890c1/63/1x5/15x7/157x7/15772000024/701622836_1/701622836.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/9ed826cd2b563c42c26c59dbb67c69e1/6af890c1/73/1x5/15x7/157x7/15772000024/701622837_1/701622837.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/8145da7daf8c9076fe48c06b03ae7232/6af890c1/83/1x5/15x7/157x7/15772000024/701622838_1/701622838.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/29726663271f8d5138f975caa3c1f56c/6af890c1/93/1x5/15x7/157x7/15772000024/701622839_1/701622839.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/033e23aa4dba468a40fd184baec01cd0/6af890c1/04/1x5/15x7/157x7/15772000024/701622840_1/701622840.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/7656327ccdf76e80e9959116e77a9343/6af890c1/14/1x5/15x7/157x7/15772000024/701622841_1/701622841.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/b7e7c587f4644117fbee9a2cea815250/6af890c1/24/1x5/15x7/157x7/15772000024/701622842_1/701622842.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/13b956ff540d773d46b5aa38a6d0fcfb/6af890c1/34/1x5/15x7/157x7/15772000024/701622843_1/701622843.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/077214f531c3074739bce0987954702b/6af890c1/44/1x5/15x7/157x7/15772000024/701622844_1/701622844.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/24836bf2a0535d3919c1d72965eda568/6af890c1/54/1x5/15x7/157x7/15772000024/701622845_1/701622845.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/b31958980618faa800cbb41036b9b6ca/6af890c1/64/1x5/15x7/157x7/15772000024/701622846_1/701622846.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/f35c8b09c530c73eaff3a86c028e6a24/6af890c1/74/1x5/15x7/157x7/15772000024/701622847_1/701622847.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/2100bc30d4c919270d14e30c3994d9de/6af890c1/84/1x5/15x7/157x7/15772000024/701622848_1/701622848.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/df9b52f10a6f2d94c1e725830473b2fe/6af890c1/94/1x5/15x7/157x7/15772000024/701622849_1/701622849.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/a21e478d1d0893a78dc826570f900d47/6af890c1/05/1x5/15x7/157x7/15772000024/701622850_1/701622850.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/509ab5dc45a649fb611a5234104993fd/6af890c1/15/1x5/15x7/157x7/15772000024/701622851_1/701622851.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/c0ee3dde4c0a6158dd239fd82641f16b/6af890c1/25/1x5/15x7/157x7/15772000024/701622852_1/701622852.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/d0f1c24f847680e4cb5621645781e288/6af890c1/35/1x5/15x7/157x7/15772000024/701622853_1/701622853.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/b8fddaa010832f4bc9205f8f857bbd1b/6af890c1/45/1x5/15x7/157x7/15772000024/701622854_1/701622854.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/724b8a73b7a71ed9ef7a92bab834d339/6af890c1/55/1x5/15x7/157x7/15772000024/701622855_1/701622855.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/ab2ad52f1d74ca51cbda36de0abd9f84/6af890c1/65/1x5/15x7/157x7/15772000024/701622856_1/701622856.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/3a944888e0daa9d7500fcef3935f8199/6af890c1/75/1x5/15x7/157x7/15772000024/701622857_1/701622857.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/f02ed5810b75498f0f42b28e23e070af/6af890c1/85/1x5/15x7/157x7/15772000024/701622858_1/701622858.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/f126a43f580d44d94f86014ce0cab23b/6af890c1/95/1x5/15x7/157x7/15772000024/701622859_1/701622859.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/1fe5fbb922d69e2a74045054120dcf67/6af890c1/06/1x5/15x7/157x7/15772000024/701622860_1/701622860.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/76593cb7315d943ff9765dcf963ee7d7/6af890c1/16/1x5/15x7/157x7/15772000024/701622861_1/701622861.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/a4d830bcc40894c1ef62012e77effd41/6af890c1/26/1x5/15x7/157x7/15772000024/701622862_1/701622862.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/c156d6bfee68da577c2e6e02ef2927fe/6af890c1/36/1x5/15x7/157x7/15772000024/701622863_1/701622863.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/55491a832f20d90f0b931b1d490c3256/6af890c1/46/1x5/15x7/157x7/15772000024/701622864_1/701622864.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/91c8e6984c7ec69a4396e231854294ea/6af890c1/56/1x5/15x7/157x7/15772000024/701622865_1/701622865.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/884f80ff3d050a27bb60fdb744ad1e06/6af890c1/66/1x5/15x7/157x7/15772000024/701622866_1/701622866.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/ecee9670c2f76374a58f91e17ee785d9/6af890c1/76/1x5/15x7/157x7/15772000024/701622867_1/701622867.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/788bec7c6a862a5a1bdb1587b760404d/6af890c1/86/1x5/15x7/157x7/15772000024/701622868_1/701622868.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/bcf616b19d418b89ac7ff3976d299a51/6af890c1/96/1x5/15x7/157x7/15772000024/701622869_1/701622869.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/ff3a419db76e1e79e93938afe54a5399/6af890c1/07/1x5/15x7/157x7/15772000024/701622870_1/701622870.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/d81abfb2cf3c6bf35ba56c06a43e54b9/6af890c1/17/1x5/15x7/157x7/15772000024/701622871_1/701622871.720p.wz.h264.mp4",
+  "https://hwztakavideoto.dramaboxdb.com/24fbd58c6bb35f5cf5b011cff2f44ff1/6af890c1/27/1x5/15x7/157x7/15772000024/701622872_1/701622872.720p.wz.h264.mp4"
+ ],
+ "dateAdded": "2026-11-13T15:56:35Z"
+},
+{
+ "id": 113179,
+ "title": "Climbing Into My Sister’s Fiancé’s Bed",
+ "slug": "climbing-into-my-sisters-fiancs-bed",
+ "platform": "dramawave",
+ "episodes": 45,
+ "cover": "https://dramaflix.net/dfl-media/img/covers/7f4bad2f651fd933/480.webp",
+ "description": "Sierra Reed never expected her secret lover to become her sister's fiancé. After a night with billionaire Kingston Vale, she discovers he's marrying her half-sister, Lena. Betrayed and framed by Lena, Sierra fights back, only to lose Kingston. But soon, he tries to win her back.",
+ "about": "",
+ "genres": [
+  {
+   "slug": "betrayal",
+   "name": "Betrayal"
+  },
+  {
+   "slug": "billionaire",
+   "name": "Billionaire"
+  },
+  {
+   "slug": "dark-romance",
+   "name": "Dark Romance"
+  },
+  {
+   "slug": "drama",
+   "name": "Drama"
+  },
+  {
+   "slug": "forbidden-love",
+   "name": "Forbidden Love"
+  },
+  {
+   "slug": "love-triangle",
+   "name": "Love Triangle"
+  },
+  {
+   "slug": "romance",
+   "name": "Romance"
+  },
+  {
+   "slug": "second-chance",
+   "name": "Second Chance"
+  }
+ ],
+ "rating": null,
+ "releaseDate": "",
+ "dubbed": false,
+ "source": "dramadunyam",
+ "urls": [
+  "https://dramadunyam.com/vr/fr/vt/bc503fbb-e3ec-41e8-bede-2bccae282054/h264-e047988b-bebe-4d13-aea2-725ca1fa1d9e.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/670e5c1b-1123-4320-9165-7ed1e7fef1c3/h264-4ff3622e-21cd-41f8-826e-18b4fca0632a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/7c631394-aee9-4a49-9932-6e168f595abc/h264-c3f8fabc-e47a-48c8-9c75-0406679d9894.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a05508a7-7383-430d-98ed-c7bf7250fb49/h264-2d91e036-9fdb-4eab-a240-16d7b1ff59e3.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a1c71f09-cf48-4f5a-8b4b-7d001cffb45e/h264-8bbe3a03-05d0-4ddb-9ec5-9a88040063bc.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/00d5da50-de03-4f27-8807-66c5778a8bb9/h264-cc4a4c6c-ac18-4a18-a704-ca706f6bf153.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/17a4c34a-2fbf-4b7a-99a5-97c8aced4f31/h264-c6a4aa92-7b86-4ba5-b022-d7866fb9e661.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/95859281-b431-45e5-ad89-5a8049859826/h264-2083aa5e-9ccb-4445-ae04-d84da97c7239.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/cd91fd61-41ea-4efb-a9e8-2d1583ce9fe9/h264-604368aa-199f-4bd8-acec-8950affbaf93.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b7f32417-c9e3-481b-b965-75d03f7b446f/h264-30766ae1-f425-4875-82a1-10584c334a6f.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/edd5236f-8387-4f14-8f9c-16331b3f63f2/h264-e83bb4e8-594e-4dee-8a5e-1b367c75d868.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d9804344-258e-42e0-8056-8a53586e719b/h264-73d12edd-baa0-4333-abee-3eb5325c0eb3.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/26f91be3-c26d-47d6-a497-a3031d1dfa9b/h264-9d709c70-c33e-4820-b7bf-6803539ce7b2.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/4e1bdf4a-2c04-4486-b7e5-935f6dab3763/h264-837ed1ea-c503-4d85-9f5d-94f3d8d65453.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/cb9cc5e8-e196-413c-a6ab-c5c8ff132b0e/h264-1f5ba489-bc8d-46dd-8581-801083bec1c9.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a1657a75-10cf-4e50-b68d-9c26a330048f/h264-95cfc11d-fee6-433f-9f73-1da040f06caf.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/e43933de-e245-4aa9-b69a-249a29cb350a/h264-cc3f5b41-304b-42bf-ab7e-f0f7c1938134.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/152c3d2d-4663-4a06-87a0-920092d4a5c1/h264-12d831ee-b1e0-4a7e-bd23-a3c8dc76b4ae.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/e26e02a8-7708-416a-a321-0936829c1245/h264-3f57bbf0-a3c2-4d21-ad58-e8e89eec8e29.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b77e43e7-dec9-476c-afd3-c8ac79474b55/h264-ce83125f-4a71-461a-8ec2-2abeecd3c1f4.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/990b9783-61bf-4d3d-9f6d-51d9339baa53/h264-dc2b8bd5-5804-438c-a39e-5afa371df827.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/eb53be61-4fc5-4a43-9f36-30bc04850ea1/h264-554726fd-9156-4c41-92ae-0ce641a78726.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/e80639a3-b006-487f-89e5-1d310ffccf32/h264-4bd47f5e-3587-4ef5-bb13-054ae2bd9cb2.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/4be9f6fd-846a-4e14-ab90-6ec6239c3a19/h264-a41d18f2-7f78-49c2-938f-181cc24e9cd4.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d849f8d2-71f4-4e2a-a92c-100833c49134/h264-c4202224-34cd-4716-b084-e3721f257eec.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/86b7407a-54ff-4831-890a-6616be71615c/h264-e40a2c77-ae53-4242-8313-6e3153fab6ed.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/046458c5-f309-4cc9-8986-c36399134ad7/h264-c8a170de-22b6-4d7d-aa98-0ccfb481b9b2.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b4a5f9f5-fd92-43de-8245-dca9739a4230/h264-1e6e77b8-80a0-4078-98e9-77c77e768985.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/cd6a1424-d85c-4500-a1c1-312f6e8b5245/h264-218881e0-25e1-4f35-8152-9e9e22d80cc7.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/02232bb3-9151-434c-90c0-4285f564e01c/h264-cc61a9c7-3609-4ac1-abca-565b56728862.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/df66b3d4-ec4b-4b3f-8083-4361da68471b/h264-5d5dee5f-56b7-407d-a0ab-1927fe270aa9.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/ba4113fc-6acc-45d0-8d5b-cf46ab6d10a0/h264-154de587-8a42-4df9-95c6-06fbf1956e89.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/253917fa-50c5-4280-8f38-53bf72ae9e4b/h264-087e33c3-335a-4b7f-9e80-1ed6b23dc186.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/3c5297f2-9e51-43d5-add1-21b4f0cfef37/h264-3c86b73d-50cf-487f-ab07-a03cbf509079.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/c293acaf-23af-42ca-b3f5-8fc0b3de679b/h264-a0914912-33a4-4795-97f4-731da4916834.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/fdc2ff0c-2080-46bc-aeb2-d511c29a882f/h264-f4baf534-6bb0-4bb8-b58e-da5458194af9.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/2c573b17-e1a9-49f4-ab16-0ea428c111d9/h264-88b7603c-f52e-451e-853e-183c54cc5730.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/f7b0d262-f754-4aa3-9516-a20638d675af/h264-a6aa3894-59e2-4f1f-8f19-5d9562c2e51c.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/97c7d16f-8c36-4129-8714-ab4041f6fe56/h264-179aa78c-4682-4dde-a0e8-6ffe23a9757a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d017a1ef-59e7-4a37-894b-1b575a73283d/h264-8a73e52f-4229-46ff-acda-446b357c33ed.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/c77fb8cd-5dea-4f1a-9d0b-67d3581a7b81/h264-561965dd-602d-40bd-8c0d-11834411a61b.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/0ca8154e-1ef7-4d87-a742-085327143ee2/h264-319ee2ed-e3bf-4b23-a304-df933f47ba1b.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/88349666-52b3-4433-9a7f-7f6802e667a8/h264-bff644eb-e710-4e60-97ad-91f1d8f6afa2.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/34a02417-a58a-4367-ab24-54306fc58e75/h264-292eff9f-bd80-48d8-bb14-12e4b444b350.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/7b5cc233-1213-4925-bce2-91f99cc30619/h264-33265eb8-0a68-4bfe-9e1a-7e56d9492279.m3u8"
+ ],
+ "dateAdded": "2026-11-13T15:56:35Z"
+},
+{
  "id": 75927,
  "title": "Mafia Single Daddy’s Stolen Bride",
  "slug": "mafia-single-daddys-stolen-bride",
