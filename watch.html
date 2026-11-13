@@ -97,7 +97,8 @@
         .meta-info strong { color: var(--text-primary); }
 
         .genre-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
-        .genre-tag { font-size: 0.8rem; background: #333; color: #ddd; padding: 4px 10px; border-radius: 4px; }
+        .genre-tag { font-size: 0.8rem; background: #333; color: #ddd; padding: 4px 10px; border-radius: 4px; text-decoration: none; display: inline-block; transition: background 0.2s; }
+        .genre-tag:hover { background: var(--accent); color: #fff; }
 
         .drama-description { color: var(--text-secondary); font-size: 1rem; line-height: 1.7; margin-bottom: 1rem; }
         .drama-about { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #333; }
@@ -217,7 +218,7 @@
            Example: const SEGMENT_PROXY_BASE = 'https://segment-proxy.you.workers.dev/?u=';
            (a bare worker URL without the ?u= also works — it is added automatically)
            ============================================ */
-        const SEGMENT_PROXY_BASE = 'https://segment-proxy.webmasterjamezzz13.workers.dev/?u=';
+        const SEGMENT_PROXY_BASE = '';
         const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net'];
         function proxiedUrl(url) {
             if (!SEGMENT_PROXY_BASE) return url;
@@ -378,7 +379,7 @@
             metaInfo.innerHTML = metaParts.join('');
 
             const genresContainer = document.getElementById('playerGenres');
-            genresContainer.innerHTML = (drama.genres || []).map(g => `<span class="genre-tag">${g}</span>`).join('');
+            genresContainer.innerHTML = (drama.genres || []).map(g => `<a class="genre-tag" href="index.html?genre=${encodeURIComponent(g)}">${g}</a>`).join('');
 
             // Resolve the real episode URLs first (inline or from eps chunk file)
             showMsg('Loading episodes...');

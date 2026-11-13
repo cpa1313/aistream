@@ -16,9 +16,16 @@
         .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
         
-        .search-container { margin-bottom: 2rem; }
+        .search-container { margin-bottom: 1.25rem; }
         #searchInput { width: 100%; padding: 1rem 1.5rem; font-size: 1.1rem; background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid #333; border-radius: 8px; outline: none; transition: border-color 0.2s; }
         #searchInput:focus { border-color: var(--accent); }
+
+        .genre-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .genre-chip { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid #333; border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .genre-chip:hover { border-color: var(--accent); }
+        .genre-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+        .genre-chip .cnt { color: var(--text-secondary); font-size: 0.75rem; margin-left: 4px; }
+        .genre-chip.active .cnt { color: rgba(255,255,255,0.85); }
 
         .drama-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
         .drama-card { background: var(--bg-secondary); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: block; }
@@ -28,7 +35,8 @@
         .drama-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .drama-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
         .genre-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
-        .genre-tag { font-size: 0.65rem; background: #333; color: #ddd; padding: 2px 6px; border-radius: 4px; }
+        .genre-tag { font-size: 0.65rem; background: #333; color: #ddd; padding: 2px 6px; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        .genre-tag:hover { background: var(--accent); color: #fff; }
         
         /* Numbered Pagination Styles */
         .pagination { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 3rem; flex-wrap: wrap; }
@@ -52,7 +60,8 @@
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="🔍 Search by title, platform, or genre..." oninput="handleSearch()">
         </div>
-        <h2 style="margin-bottom: 1.5rem;">Latest Releases</h2>
+        <div class="genre-bar" id="genreBar"></div>
+        <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Latest Releases</h2>
         <div class="drama-grid" id="dramaGrid"></div>
         <div class="pagination" id="paginationControls"></div>
     </div>
@@ -61,11 +70,67 @@
         let currentPage = 1;
         const itemsPerPage = 20; // Changed to 20 videos per page
         let currentSearchQuery = '';
+        let currentGenre = '';
+
+        // Genres with at least this many titles get a chip in the bar;
+        // rarer genres stay reachable via the tags on each card.
+        const GENRE_BAR_MIN_COUNT = 100;
 
         function handleSearch() {
             currentSearchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
             currentPage = 1;
             renderHome();
+        }
+
+        function genreCounts() {
+            const counts = new Map();
+            dramas.forEach(d => (d.genres || []).forEach(g => counts.set(g, (counts.get(g) || 0) + 1)));
+            return counts;
+        }
+
+        function buildGenreBar() {
+            const bar = document.getElementById('genreBar');
+            const counts = genreCounts();
+            const top = [...counts.entries()].filter(([, c]) => c >= GENRE_BAR_MIN_COUNT).sort((a, b) => b[1] - a[1]);
+            bar.innerHTML = '';
+
+            const allBtn = document.createElement('button');
+            allBtn.className = 'genre-chip';
+            allBtn.dataset.g = '';
+            allBtn.textContent = 'All';
+            allBtn.onclick = () => setGenre('');
+            bar.appendChild(allBtn);
+
+            top.forEach(([g, c]) => {
+                const b = document.createElement('button');
+                b.className = 'genre-chip';
+                b.dataset.g = g;
+                b.textContent = g;
+                const cnt = document.createElement('span');
+                cnt.className = 'cnt';
+                cnt.textContent = c;
+                b.appendChild(cnt);
+                b.onclick = () => setGenre(g);
+                bar.appendChild(b);
+            });
+            updateGenreBar();
+        }
+
+        function updateGenreBar() {
+            document.querySelectorAll('#genreBar .genre-chip').forEach(b => {
+                b.classList.toggle('active', b.dataset.g === currentGenre);
+            });
+        }
+
+        function setGenre(g) {
+            currentGenre = g;
+            currentPage = 1;
+            const url = new URL(location.href);
+            if (g) { url.searchParams.set('genre', g); } else { url.searchParams.delete('genre'); }
+            history.replaceState(null, '', url);
+            updateGenreBar();
+            renderHome();
+            window.scrollTo(0, 0);
         }
 
         function renderHome() {
@@ -74,14 +139,26 @@
             grid.innerHTML = '';
             pagination.innerHTML = '';
 
-            const filtered = currentSearchQuery === '' ? dramas : dramas.filter(d => 
-                d.title.toLowerCase().includes(currentSearchQuery) || 
-                d.platform.toLowerCase().includes(currentSearchQuery) ||
-                (d.genres && d.genres.some(g => g.toLowerCase().includes(currentSearchQuery)))
-            );
+            let filtered = dramas;
+            if (currentGenre) {
+                const g = currentGenre.toLowerCase();
+                filtered = filtered.filter(d => (d.genres || []).some(x => x.toLowerCase() === g));
+            }
+            if (currentSearchQuery) {
+                filtered = filtered.filter(d => 
+                    d.title.toLowerCase().includes(currentSearchQuery) || 
+                    d.platform.toLowerCase().includes(currentSearchQuery) ||
+                    (d.genres && d.genres.some(g => g.toLowerCase().includes(currentSearchQuery)))
+                );
+            }
+
+            const titleEl = document.getElementById('sectionTitle');
+            titleEl.textContent = currentGenre
+                ? `${currentGenre} — ${filtered.length} drama${filtered.length === 1 ? '' : 's'}`
+                : 'Latest Releases';
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="error-msg">No dramas found matching your search.</div>';
+                grid.innerHTML = '<div class="error-msg">No dramas found. Clear the search box or tap the "All" genre chip.</div>';
                 return;
             }
 
@@ -94,7 +171,7 @@
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
                 
-                const genreHtml = (drama.genres || []).slice(0, 2).map(g => `<span class="genre-tag">${g}</span>`).join('');
+                const genreHtml = (drama.genres || []).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
                     <img src="${drama.cover}" alt="${drama.title}" loading="lazy">
                     <div class="drama-info">
@@ -177,7 +254,17 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', renderHome);
+        window.addEventListener('DOMContentLoaded', () => {
+            // Deep link: index.html?genre=Family%20Drama
+            const wanted = new URLSearchParams(location.search).get('genre');
+            if (wanted) {
+                const w = wanted.toLowerCase();
+                const exists = dramas.some(d => (d.genres || []).some(g => g.toLowerCase() === w));
+                if (exists) currentGenre = wanted;
+            }
+            buildGenreBar();
+            renderHome();
+        });
     </script>
 </body>
 </html>
