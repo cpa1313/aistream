@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DramaStream - Free Short Dramas</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="data-part-1.js"></script>
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
@@ -48,6 +50,12 @@
         .page-ellipsis { color: var(--text-secondary); font-size: 1.2rem; padding: 0 0.5rem; }
         
         .error-msg { color: #ff4444; text-align: center; padding: 2rem; grid-column: 1/-1; font-size: 1.1rem; background: #2a1a1a; border-radius: 8px; border: 1px solid #ff4444; }
+
+        .site-footer { border-top: 1px solid #2a2a2a; background: var(--bg-secondary); margin-top: 2rem; }
+        .footer-inner { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
+        .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; }
+        .footer-links a:hover { color: var(--accent); }
+        .footer-note { width: 100%; color: var(--text-secondary); font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -276,5 +284,12 @@
             renderHome();
         });
     </script>
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <a class="logo" href="/">🎬 DramaStream</a>
+            <nav class="footer-links"><a href="/dmca">DMCA &amp; Copyright</a></nav>
+            <p class="footer-note">fulldrama.stream does not host video files. Streams are embedded from third-party sources.</p>
+        </div>
+    </footer>
 </body>
 </html>
