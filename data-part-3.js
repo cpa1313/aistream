@@ -94,7 +94,9 @@ window.DB_DRAMAS_P3.push(
   "https://hwztakavideoto.dramaboxdb.com/832cc5281d1fea6b3aaed1b3e2588ecd/6af890c1/06/9x1/91x5/915x2/91521000024/700798260_1/700798260.720p.narrowv3.mp4"
  ],
  "dateAdded": "2026-11-13T16:08:45Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 229668,
  "title": "The Heirless Mafia Boss Claimed Me",
@@ -187,103 +189,9 @@ window.DB_DRAMAS_P3.push(
   "https://hwztakavideoto.dramaboxdb.com/24fbd58c6bb35f5cf5b011cff2f44ff1/6af890c1/27/1x5/15x7/157x7/15772000024/701622872_1/701622872.720p.wz.h264.mp4"
  ],
  "dateAdded": "2026-11-13T15:56:35Z"
-},
-{
- "id": 113179,
- "title": "Climbing Into My Sister’s Fiancé’s Bed",
- "slug": "climbing-into-my-sisters-fiancs-bed",
- "platform": "dramawave",
- "episodes": 45,
- "cover": "https://dramaflix.net/dfl-media/img/covers/7f4bad2f651fd933/480.webp",
- "description": "Sierra Reed never expected her secret lover to become her sister's fiancé. After a night with billionaire Kingston Vale, she discovers he's marrying her half-sister, Lena. Betrayed and framed by Lena, Sierra fights back, only to lose Kingston. But soon, he tries to win her back.",
- "about": "",
- "genres": [
-  {
-   "slug": "betrayal",
-   "name": "Betrayal"
-  },
-  {
-   "slug": "billionaire",
-   "name": "Billionaire"
-  },
-  {
-   "slug": "dark-romance",
-   "name": "Dark Romance"
-  },
-  {
-   "slug": "drama",
-   "name": "Drama"
-  },
-  {
-   "slug": "forbidden-love",
-   "name": "Forbidden Love"
-  },
-  {
-   "slug": "love-triangle",
-   "name": "Love Triangle"
-  },
-  {
-   "slug": "romance",
-   "name": "Romance"
-  },
-  {
-   "slug": "second-chance",
-   "name": "Second Chance"
-  }
- ],
- "rating": null,
- "releaseDate": "",
- "dubbed": false,
- "source": "dramadunyam",
- "urls": [
-  "https://dramadunyam.com/vr/fr/vt/bc503fbb-e3ec-41e8-bede-2bccae282054/h264-e047988b-bebe-4d13-aea2-725ca1fa1d9e.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/670e5c1b-1123-4320-9165-7ed1e7fef1c3/h264-4ff3622e-21cd-41f8-826e-18b4fca0632a.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/7c631394-aee9-4a49-9932-6e168f595abc/h264-c3f8fabc-e47a-48c8-9c75-0406679d9894.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/a05508a7-7383-430d-98ed-c7bf7250fb49/h264-2d91e036-9fdb-4eab-a240-16d7b1ff59e3.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/a1c71f09-cf48-4f5a-8b4b-7d001cffb45e/h264-8bbe3a03-05d0-4ddb-9ec5-9a88040063bc.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/00d5da50-de03-4f27-8807-66c5778a8bb9/h264-cc4a4c6c-ac18-4a18-a704-ca706f6bf153.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/17a4c34a-2fbf-4b7a-99a5-97c8aced4f31/h264-c6a4aa92-7b86-4ba5-b022-d7866fb9e661.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/95859281-b431-45e5-ad89-5a8049859826/h264-2083aa5e-9ccb-4445-ae04-d84da97c7239.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/cd91fd61-41ea-4efb-a9e8-2d1583ce9fe9/h264-604368aa-199f-4bd8-acec-8950affbaf93.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/b7f32417-c9e3-481b-b965-75d03f7b446f/h264-30766ae1-f425-4875-82a1-10584c334a6f.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/edd5236f-8387-4f14-8f9c-16331b3f63f2/h264-e83bb4e8-594e-4dee-8a5e-1b367c75d868.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/d9804344-258e-42e0-8056-8a53586e719b/h264-73d12edd-baa0-4333-abee-3eb5325c0eb3.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/26f91be3-c26d-47d6-a497-a3031d1dfa9b/h264-9d709c70-c33e-4820-b7bf-6803539ce7b2.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/4e1bdf4a-2c04-4486-b7e5-935f6dab3763/h264-837ed1ea-c503-4d85-9f5d-94f3d8d65453.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/cb9cc5e8-e196-413c-a6ab-c5c8ff132b0e/h264-1f5ba489-bc8d-46dd-8581-801083bec1c9.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/a1657a75-10cf-4e50-b68d-9c26a330048f/h264-95cfc11d-fee6-433f-9f73-1da040f06caf.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/e43933de-e245-4aa9-b69a-249a29cb350a/h264-cc3f5b41-304b-42bf-ab7e-f0f7c1938134.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/152c3d2d-4663-4a06-87a0-920092d4a5c1/h264-12d831ee-b1e0-4a7e-bd23-a3c8dc76b4ae.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/e26e02a8-7708-416a-a321-0936829c1245/h264-3f57bbf0-a3c2-4d21-ad58-e8e89eec8e29.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/b77e43e7-dec9-476c-afd3-c8ac79474b55/h264-ce83125f-4a71-461a-8ec2-2abeecd3c1f4.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/990b9783-61bf-4d3d-9f6d-51d9339baa53/h264-dc2b8bd5-5804-438c-a39e-5afa371df827.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/eb53be61-4fc5-4a43-9f36-30bc04850ea1/h264-554726fd-9156-4c41-92ae-0ce641a78726.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/e80639a3-b006-487f-89e5-1d310ffccf32/h264-4bd47f5e-3587-4ef5-bb13-054ae2bd9cb2.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/4be9f6fd-846a-4e14-ab90-6ec6239c3a19/h264-a41d18f2-7f78-49c2-938f-181cc24e9cd4.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/d849f8d2-71f4-4e2a-a92c-100833c49134/h264-c4202224-34cd-4716-b084-e3721f257eec.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/86b7407a-54ff-4831-890a-6616be71615c/h264-e40a2c77-ae53-4242-8313-6e3153fab6ed.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/046458c5-f309-4cc9-8986-c36399134ad7/h264-c8a170de-22b6-4d7d-aa98-0ccfb481b9b2.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/b4a5f9f5-fd92-43de-8245-dca9739a4230/h264-1e6e77b8-80a0-4078-98e9-77c77e768985.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/cd6a1424-d85c-4500-a1c1-312f6e8b5245/h264-218881e0-25e1-4f35-8152-9e9e22d80cc7.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/02232bb3-9151-434c-90c0-4285f564e01c/h264-cc61a9c7-3609-4ac1-abca-565b56728862.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/df66b3d4-ec4b-4b3f-8083-4361da68471b/h264-5d5dee5f-56b7-407d-a0ab-1927fe270aa9.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/ba4113fc-6acc-45d0-8d5b-cf46ab6d10a0/h264-154de587-8a42-4df9-95c6-06fbf1956e89.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/253917fa-50c5-4280-8f38-53bf72ae9e4b/h264-087e33c3-335a-4b7f-9e80-1ed6b23dc186.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/3c5297f2-9e51-43d5-add1-21b4f0cfef37/h264-3c86b73d-50cf-487f-ab07-a03cbf509079.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/c293acaf-23af-42ca-b3f5-8fc0b3de679b/h264-a0914912-33a4-4795-97f4-731da4916834.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/fdc2ff0c-2080-46bc-aeb2-d511c29a882f/h264-f4baf534-6bb0-4bb8-b58e-da5458194af9.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/2c573b17-e1a9-49f4-ab16-0ea428c111d9/h264-88b7603c-f52e-451e-853e-183c54cc5730.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/f7b0d262-f754-4aa3-9516-a20638d675af/h264-a6aa3894-59e2-4f1f-8f19-5d9562c2e51c.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/97c7d16f-8c36-4129-8714-ab4041f6fe56/h264-179aa78c-4682-4dde-a0e8-6ffe23a9757a.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/d017a1ef-59e7-4a37-894b-1b575a73283d/h264-8a73e52f-4229-46ff-acda-446b357c33ed.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/c77fb8cd-5dea-4f1a-9d0b-67d3581a7b81/h264-561965dd-602d-40bd-8c0d-11834411a61b.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/0ca8154e-1ef7-4d87-a742-085327143ee2/h264-319ee2ed-e3bf-4b23-a304-df933f47ba1b.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/88349666-52b3-4433-9a7f-7f6802e667a8/h264-bff644eb-e710-4e60-97ad-91f1d8f6afa2.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/34a02417-a58a-4367-ab24-54306fc58e75/h264-292eff9f-bd80-48d8-bb14-12e4b444b350.m3u8",
-  "https://dramadunyam.com/vr/fr/vt/7b5cc233-1213-4925-bce2-91f99cc30619/h264-33265eb8-0a68-4bfe-9e1a-7e56d9492279.m3u8"
- ],
- "dateAdded": "2026-11-13T15:56:35Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 75927,
  "title": "Mafia Single Daddy’s Stolen Bride",
@@ -381,7 +289,9 @@ window.DB_DRAMAS_P3.push(
   "https://hwztakavideoto.dramaboxdb.com/f4e078fd3dec1e37a862dc52183e6c40/6af890c1/47/2x1/21x5/215x8/21581000024/701149574_1/701149574.720p.narrowv3.mp4"
  ],
  "dateAdded": "2026-11-13T15:10:37Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 75916,
  "title": "Tempest：The Last Mecha",
@@ -482,7 +392,9 @@ window.DB_DRAMAS_P3.push(
   "https://hwztakavideoto.dramaboxdb.com/3adccbce5f755389285b451e4b01b87d/6af890c1/88/9x2/92x5/925x8/92581000024/701151288_1/701151288.720p.narrowv3.mp4"
  ],
  "dateAdded": "2026-11-13T15:10:37Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 849235106032,
  "title": "Fly Back To My Heart, Captain",
@@ -555,7 +467,9 @@ window.DB_DRAMAS_P3.push(
   "https://v3.goodshort.com/mts/books/466/31001940466/1214281/iquuvrfmng/origin1/v1ee3geray.m3u8?expiredTime=1795174424&tul=05fc625e903d900430ec9c3944936bad3a2f6b79a01b428e5f2c815a8ef9f9f6728b19bf7d8e65db837d8e73d062974c3cd9e24a4a567707933577dc65fa920c"
  ],
  "dateAdded": "2026-11-13T14:37:58Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 338801,
  "title": "Reborn to Build My Own Empire",
@@ -646,7 +560,9 @@ window.DB_DRAMAS_P3.push(
   "https://hwztakavideoto.dramaboxdb.com/a788d6e10df3b393063d3f3f33d063dc/6af890c1/63/1x6/16x3/163x1/16313000024/701798936_1/701798936.720p.narrowv3.mp4"
  ],
  "dateAdded": "2026-11-13T13:51:10Z"
-},
+}
+);
+window.DB_DRAMAS_P3.push(
 {
  "id": 153578,
  "title": "The Ex Who Became My Sister-in-Law",
