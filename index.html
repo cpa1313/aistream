@@ -10,8 +10,7 @@
     <meta name="keywords" content="short drama, full drama, watch dramas online free, vertical drama, romance drama, billionaire drama, CEO drama, revenge drama, werewolf drama, DramaStream">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://fulldrama.stream/">
-	<!-- ads verification -->
-	<meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
+
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Watch Short Dramas Full Episodes Free Online | DramaStream">
@@ -36,6 +35,29 @@
         },
         "query-input": "required name=search_term_string"
       }
+    }
+    </script>
+    <!-- FAQ Structured Data for Rich Results (matches the visible accordion) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is DramaStream?",
+          "acceptedAnswer": { "@type": "Answer", "text": "DramaStream (fulldrama.stream) is a free streaming site for short dramas and vertical series. Every title plays in full — all episodes back to back, in your browser, with no sign-up and no fees. The catalog has over 25,000 series across romance, billionaire, revenge, werewolf and more." } },
+        { "@type": "Question", "name": "Is it really free to watch short dramas here?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every episode of every drama streams free — no subscription, no paywall, no hidden fees, and no episode limits." } },
+        { "@type": "Question", "name": "Do I need an app or an account?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. DramaStream runs entirely in your browser on phones, tablets, laptops and desktops. There is no app to download and no account to create — open the site and start watching." } },
+        { "@type": "Question", "name": "What are short dramas (vertical series)?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Short dramas are bite-sized series made for phones: vertical video, episodes of one to three minutes, and fast-paced stories you can binge in one sitting. Popular genres include billionaire and CEO romances, revenge plots, werewolf and fated-mate fantasies, and hidden-identity thrillers." } },
+        { "@type": "Question", "name": "What can I watch on DramaStream?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire & CEO, revenge, werewolf, contract marriage, divorce & exes and more. Use the Popular and Rankings tabs to see the highest-rated titles, or New for the latest additions." } },
+        { "@type": "Question", "name": "How often are new dramas added?",
+          "acceptedAnswer": { "@type": "Answer", "text": "New releases are added daily. Tap the New tab (or open fulldrama.stream/?sort=new) to see everything added most recently first." } },
+        { "@type": "Question", "name": "How does DramaStream handle copyright?",
+          "acceptedAnswer": { "@type": "Answer", "text": "DramaStream does not host video files — streams are embedded from third-party sources. If you are a rights holder and believe content infringes your copyright, contact us through the DMCA page and we will process your request." } }
+      ]
     }
     </script>
     <script src="data-part-1.js"></script>
@@ -104,8 +126,20 @@
         .seo-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
         .seo-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; }
         .seo-links a:hover { color: var(--accent); }
+
+        /* FAQ accordion */
+        .faq-section { margin-top: 3rem; background: var(--bg-secondary); border: 1px solid #333; border-radius: 8px; padding: 1.25rem 1.5rem; }
+        .faq-heading { font-size: 1.3rem; margin-bottom: 0.75rem; }
+        .faq-item { border-top: 1px solid #333; }
+        .faq-item:first-of-type { border-top: none; }
+        .faq-item summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; color: var(--text-primary); font-size: 1.05rem; font-weight: bold; transition: color 0.2s; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::after { content: '+'; color: var(--accent); font-size: 1.5rem; font-weight: bold; line-height: 1; flex-shrink: 0; transition: transform 0.2s; }
+        .faq-item[open] summary::after { transform: rotate(45deg); }
+        .faq-item summary:hover { color: var(--accent); }
+        .faq-a { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; padding-bottom: 1rem; }
     </style>
-	
+	<meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
 </head>
 <body>
 
@@ -120,13 +154,45 @@
         </div>
         <div class="genre-bar" id="genreBar"></div>
         <div class="sort-tabs" id="sortTabs" role="tablist">
-            <button class="sort-tab active" data-sort="popular" onclick="setSort('popular')">🔥 Popular</button>
             <button class="sort-tab" data-sort="new" onclick="setSort('new')">✨ New</button>
+            <button class="sort-tab active" data-sort="popular" onclick="setSort('popular')">🔥 Popular</button>
             <button class="sort-tab" data-sort="rankings" onclick="setSort('rankings')">🏆 Rankings</button>
         </div>
         <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Popular Dramas</h2>
         <div class="drama-grid" id="dramaGrid"></div>
         <div class="pagination" id="paginationControls"></div>
+
+        <section class="faq-section" aria-label="Frequently asked questions">
+            <h2 class="faq-heading">Frequently Asked Questions</h2>
+            <details class="faq-item">
+                <summary>What is DramaStream?</summary>
+                <p class="faq-a">DramaStream (fulldrama.stream) is a free streaming site for short dramas and vertical series. Every title plays in full — all episodes back to back, in your browser, with no sign-up and no fees. The catalog has over 25,000 series across romance, billionaire, revenge, werewolf and more.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Is it really free to watch short dramas here?</summary>
+                <p class="faq-a">Yes. Every episode of every drama streams free — no subscription, no paywall, no hidden fees, and no episode limits.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Do I need an app or an account?</summary>
+                <p class="faq-a">No. DramaStream runs entirely in your browser on phones, tablets, laptops and desktops. There is no app to download and no account to create — open the site and start watching.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What are short dramas (vertical series)?</summary>
+                <p class="faq-a">Short dramas are bite-sized series made for phones: vertical video, episodes of one to three minutes, and fast-paced stories you can binge in one sitting. Popular genres include billionaire and CEO romances, revenge plots, werewolf and fated-mate fantasies, and hidden-identity thrillers.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What can I watch on DramaStream?</summary>
+                <p class="faq-a">Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire &amp; CEO, revenge, werewolf, contract marriage, divorce &amp; exes and more. Use the Popular and Rankings tabs to see the highest-rated titles, or New for the latest additions.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How often are new dramas added?</summary>
+                <p class="faq-a">New releases are added daily. Tap the New tab (or open fulldrama.stream/?sort=new) to see everything added most recently first.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How does DramaStream handle copyright?</summary>
+                <p class="faq-a">DramaStream does not host video files — streams are embedded from third-party sources. If you are a rights holder and believe content infringes your copyright, contact us through the DMCA page and we will process your request.</p>
+            </details>
+        </section>
     </div>
 
     <script>
