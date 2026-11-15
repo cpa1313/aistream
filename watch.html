@@ -27,6 +27,10 @@
     <meta name="twitter:description" content="Watch full short dramas free online on DramaStream — all episodes, no sign-up.">
     <meta name="twitter:image" content="">
 
+    <!-- FAQ Structured Data for Rich Results -->
+    <script type="application/ld+json" id="faqData">
+    { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [] }
+    </script>
     <!-- Structured Data for Rich Snippets -->
     <script type="application/ld+json" id="structuredData">
     {
@@ -121,6 +125,13 @@
             .sidebar { position: static; }
         }
 
+        .faq-section { margin-top: 2rem; background: var(--bg-secondary); border: 1px solid #333; border-radius: 8px; padding: 1.5rem; }
+        .faq-heading { font-size: 1.3rem; margin-bottom: 1rem; }
+        .faq-item { border-top: 1px solid #333; padding: 1rem 0; }
+        .faq-item:first-child { border-top: none; padding-top: 0; }
+        .faq-q { color: var(--text-primary); font-size: 1.05rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .faq-a { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+
         .site-footer { border-top: 1px solid #2a2a2a; background: var(--bg-secondary); margin-top: 2rem; }
         .footer-inner { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
         .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; }
@@ -180,6 +191,11 @@
                     </div>
                 </div>
 
+                <!-- 4. FAQ (SEO) -->
+                <div class="faq-section" id="faqSection" style="display: none;">
+                    <h2 class="faq-heading">Frequently Asked Questions</h2>
+                    <div id="faqList"></div>
+                </div>
             </div>
 
             <!-- Sidebar (Right Column) - For Ads -->
@@ -317,7 +333,7 @@
         }
 
         function updateSEO(drama) {
-            const title = `Full ${drama.title} - DramaStream`;
+            const title = `${drama.title} | (Full Episode) | DramaStream`;
             document.title = title;
 
             const description = drama.description || drama.about || `Watch ${drama.title} full free online — all ${drama.episodes} episodes on DramaStream.`;
@@ -361,6 +377,52 @@
             };
 
             document.getElementById('structuredData').textContent = JSON.stringify(structuredData, null, 2);
+
+            buildFAQ(drama, description);
+        }
+
+        function buildFAQ(drama, story) {
+            const t = drama.title;
+            const n = drama.episodes;
+            const faqs = [
+                [`Where can I watch "${t}" full episode for free?`,
+                 `Right here on fulldrama.stream. All ${n} episodes stream free in your browser, in order, with no app or sign-up.`],
+                [`What is ${t} about?`, story],
+                [`Is ${t} free to watch?`,
+                 `Yes — every episode of ${t} is completely free on fulldrama.stream. No subscription, no paywall, no hidden fees.`],
+                [`Do I need an app or an account to watch ${t}?`,
+                 `No. ${t} streams directly in your browser on fulldrama.stream — no app download, no sign-up, no login required.`],
+                [`How many episodes does ${t} have?`,
+                 `${t} has ${n} episodes, and they all play in order on one page, so you can watch the full series from start to finish.`],
+                [`Can I watch ${t} on my phone or tablet?`,
+                 `Yes. fulldrama.stream works on phones, tablets, laptops and desktops — the player adapts to any screen, on Wi-Fi or mobile data.`]
+            ];
+            const list = document.getElementById('faqList');
+            list.innerHTML = '';
+            faqs.forEach(([q, a]) => {
+                const item = document.createElement('div');
+                item.className = 'faq-item';
+                const qEl = document.createElement('p');
+                qEl.className = 'faq-q';
+                qEl.textContent = q;
+                const aEl = document.createElement('p');
+                aEl.className = 'faq-a';
+                aEl.textContent = a;
+                item.appendChild(qEl);
+                item.appendChild(aEl);
+                list.appendChild(item);
+            });
+            document.getElementById('faqSection').style.display = 'block';
+            const faqData = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqs.map(([q, a]) => ({
+                    "@type": "Question",
+                    "name": q,
+                    "acceptedAnswer": { "@type": "Answer", "text": a }
+                }))
+            };
+            document.getElementById('faqData').textContent = JSON.stringify(faqData, null, 2);
         }
 
         function showMsg(text, color) {
