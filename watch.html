@@ -5,26 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Dynamic SEO Meta Tags -->
-    <title>Watch Drama - DramaStream</title>
+    <title>Full Short Dramas Free Online - DramaStream</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta name="description" content="Watch free short dramas online">
+    <meta name="description" content="Watch full short dramas free online on DramaStream — all episodes, no sign-up. Romance, billionaire, revenge, werewolf and more.">
     <meta name="keywords" content="short drama, free drama, watch online, streaming">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="video.tv_show">
-    <meta property="og:title" content="Watch Drama - DramaStream">
-    <meta property="og:description" content="Watch free short dramas online">
+    <meta property="og:title" content="Full Short Dramas Free Online - DramaStream">
+    <meta property="og:description" content="Watch full short dramas free online on DramaStream — all episodes, no sign-up.">
     <meta property="og:image" content="">
     <meta property="og:url" content="">
     <meta property="og:site_name" content="DramaStream">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Watch Drama - DramaStream">
-    <meta name="twitter:description" content="Watch free short dramas online">
+    <meta name="twitter:title" content="Full Short Dramas Free Online - DramaStream">
+    <meta name="twitter:description" content="Watch full short dramas free online on DramaStream — all episodes, no sign-up.">
     <meta name="twitter:image" content="">
 
     <!-- Structured Data for Rich Snippets -->
@@ -317,10 +317,10 @@
         }
 
         function updateSEO(drama) {
-            const title = `Watch ${drama.title} - ${drama.episodes} Episodes Free | DramaStream`;
+            const title = `Full ${drama.title} - DramaStream`;
             document.title = title;
 
-            const description = drama.description || drama.about || `Watch ${drama.title} free online. ${drama.episodes} episodes available on DramaStream.`;
+            const description = drama.description || drama.about || `Watch ${drama.title} full free online — all ${drama.episodes} episodes on DramaStream.`;
             document.querySelector('meta[name="description"]').setAttribute('content', description);
 
             const keywords = `${drama.title}, ${drama.platform}, short drama, free drama, watch online, ${genreNames(drama).join(', ')}`;
@@ -342,6 +342,7 @@
                 "@context": "https://schema.org",
                 "@type": "TVSeries",
                 "name": drama.title,
+                "alternateName": `Full ${drama.title}`,
                 "description": description,
                 "genre": genreNames(drama),
                 "numberOfEpisodes": drama.episodes,

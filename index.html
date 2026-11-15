@@ -6,6 +6,37 @@
     <title>DramaStream - Free Short Dramas</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description" content="Watch full short dramas online free on DramaStream — thousands of vertical series: romance, billionaire, revenge, werewolf, CEO. New episodes daily, no sign-up.">
+    <meta name="keywords" content="short drama, full drama, watch dramas online free, vertical drama, romance drama, billionaire drama, CEO drama, revenge drama, werewolf drama, DramaStream">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://fulldrama.stream/">
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DramaStream - Watch Full Short Dramas Online Free">
+    <meta property="og:description" content="Watch full short dramas online free — thousands of vertical series, all episodes, no sign-up.">
+    <meta property="og:url" content="https://fulldrama.stream/">
+    <meta property="og:site_name" content="DramaStream">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="DramaStream - Watch Full Short Dramas Online Free">
+    <meta name="twitter:description" content="Watch full short dramas online free — thousands of vertical series, all episodes, no sign-up.">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "DramaStream",
+      "url": "https://fulldrama.stream/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://fulldrama.stream/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <script src="data-part-1.js"></script>
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
@@ -56,6 +87,14 @@
         .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; }
         .footer-links a:hover { color: var(--accent); }
         .footer-note { width: 100%; color: var(--text-secondary); font-size: 0.85rem; }
+
+        .seo-h1 { font-size: 1.6rem; margin-bottom: 1.25rem; color: var(--text-primary); }
+        .seo-block { max-width: 1200px; margin: 0 auto; padding: 0 1rem 2.5rem; }
+        .seo-block h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .seo-block p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem; }
+        .seo-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+        .seo-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; }
+        .seo-links a:hover { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -65,6 +104,7 @@
     </header>
 
     <div class="container">
+        <h1 class="seo-h1">Watch Full Short Dramas Online Free</h1>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="🔍 Search by title, platform, or genre..." oninput="handleSearch()">
         </div>
@@ -273,17 +313,39 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Deep link: index.html?genre=Family%20Drama
-            const wanted = new URLSearchParams(location.search).get('genre');
+            // Deep link: index.html?genre=Family%20Drama or index.html?search=mafia
+            const params = new URLSearchParams(location.search);
+            const wanted = params.get('genre');
             if (wanted) {
                 const w = wanted.toLowerCase();
                 const exists = dramas.some(d => genreNames(d).some(g => g.toLowerCase() === w));
                 if (exists) currentGenre = wanted;
             }
+            const wantedSearch = params.get('search');
+            if (wantedSearch) {
+                currentSearchQuery = wantedSearch.toLowerCase().trim();
+                document.getElementById('searchInput').value = wantedSearch;
+            }
             buildGenreBar();
             renderHome();
         });
     </script>
+    <section class="seo-block">
+        <h2>Watch Full Short Dramas Online Free</h2>
+        <p>DramaStream is a free streaming site for short dramas and vertical series. Every title plays in full — all episodes back to back, with no sign-up and no fees. The catalog spans romance, billionaire and CEO love stories, revenge sagas, werewolf and fated-mate fantasies, second-chance and hidden-identity thrillers, with new releases added daily.</p>
+        <p>Popular full dramas on DramaStream right now:</p>
+        <nav class="seo-links">
+            <a href="/watch?slug=definitely-not-the-dragon-god">Full Definitely Not the Dragon God</a>
+            <a href="/watch?slug=mafia-single-daddys-stolen-bride">Full Mafia Single Daddy's Stolen Bride</a>
+            <a href="/watch?slug=tempestthe-last-mecha">Full Tempest: The Last Mecha</a>
+            <a href="/watch?slug=the-ex-who-became-my-sister-in-law">Full The Ex Who Became My Sister-in-Law</a>
+            <a href="/watch?slug=reborn-to-build-my-own-empire">Full Reborn to Build My Own Empire</a>
+            <a href="/watch?slug=fly-back-to-my-heart-captain">Full Fly Back to My Heart, Captain</a>
+            <a href="/watch?slug=the-heirless-mafia-boss-claimed-me">Full The Heirless Mafia Boss Claimed Me</a>
+            <a href="/watch?slug=rejecting-my-five-female-mates">Full Rejecting My Five Female Mates</a>
+            <a href="/watch?slug=climbing-into-my-sisters-fiances-bed">Full Climbing Into My Sister's Fiancé's Bed</a>
+        </nav>
+    </section>
     <footer class="site-footer">
         <div class="footer-inner">
             <a class="logo" href="/">🎬 DramaStream</a>
