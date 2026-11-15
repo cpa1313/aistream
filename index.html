@@ -60,6 +60,14 @@
         .genre-chip .cnt { color: var(--text-secondary); font-size: 0.75rem; margin-left: 4px; }
         .genre-chip.active .cnt { color: rgba(255,255,255,0.85); }
 
+        /* Popular / New / Rankings pill tabs */
+        .sort-tabs { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 44px; padding: 0.35rem; margin-bottom: 1.5rem; }
+        .sort-tab { display: inline-flex; align-items: center; gap: 0.45rem; border: none; background: transparent; color: var(--text-secondary); font-size: 1rem; font-weight: 700; padding: 0.6rem 1.5rem; border-radius: 44px; cursor: pointer; transition: color 0.2s, background 0.2s; }
+        .sort-tab:hover { color: var(--text-primary); }
+        .sort-tab.active { background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; box-shadow: 0 2px 12px rgba(255,138,30,0.35); }
+        .drama-card { position: relative; }
+        .rank-badge { position: absolute; top: 8px; left: 8px; background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; font-weight: 800; font-size: 0.85rem; padding: 2px 9px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.55); z-index: 2; }
+
         .drama-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
         .drama-card { background: var(--bg-secondary); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: block; }
         .drama-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(255, 107, 53, 0.2); }
@@ -110,7 +118,12 @@
             <input type="text" id="searchInput" placeholder="🔍 Search by title, platform, or genre..." oninput="handleSearch()">
         </div>
         <div class="genre-bar" id="genreBar"></div>
-        <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Latest Releases</h2>
+        <div class="sort-tabs" id="sortTabs" role="tablist">
+            <button class="sort-tab active" data-sort="popular" onclick="setSort('popular')">🔥 Popular</button>
+            <button class="sort-tab" data-sort="new" onclick="setSort('new')">✨ New</button>
+            <button class="sort-tab" data-sort="rankings" onclick="setSort('rankings')">🏆 Rankings</button>
+        </div>
+        <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Popular Dramas</h2>
         <div class="drama-grid" id="dramaGrid"></div>
         <div class="pagination" id="paginationControls"></div>
     </div>
@@ -120,6 +133,25 @@
         const itemsPerPage = 20; // Changed to 20 videos per page
         let currentSearchQuery = '';
         let currentGenre = '';
+        let currentSort = 'popular';
+
+        // Popular = highest rated first (unrated titles sink, ties keep catalog
+        // order via the stable sort). New = catalog order as scraped. Rankings =
+        // same rating sort plus a #rank badge on each poster.
+        const SORT_LABELS = { popular: 'Popular Dramas', new: 'Latest Releases', rankings: 'Top Rankings' };
+        const byRating = (a, b) => (b.rating || 0) - (a.rating || 0);
+
+        function setSort(s) {
+            if (!SORT_LABELS[s]) return;
+            currentSort = s;
+            currentPage = 1;
+            const url = new URL(location.href);
+            if (s === 'popular') { url.searchParams.delete('sort'); } else { url.searchParams.set('sort', s); }
+            history.replaceState(null, '', url);
+            document.querySelectorAll('#sortTabs .sort-tab').forEach(b => b.classList.toggle('active', b.dataset.sort === s));
+            renderHome();
+            window.scrollTo(0, 0);
+        }
 
         // Genres with at least this many titles get a chip in the bar;
         // rarer genres stay reachable via the tags on each card.
@@ -211,27 +243,36 @@
                 );
             }
 
+            let ranked = filtered;
+            if (currentSort === 'popular' || currentSort === 'rankings') {
+                ranked = filtered.slice().sort(byRating);
+            }
+
             const titleEl = document.getElementById('sectionTitle');
             titleEl.textContent = currentGenre
-                ? `${currentGenre} — ${filtered.length} drama${filtered.length === 1 ? '' : 's'}`
-                : 'Latest Releases';
+                ? `${currentGenre} — ${ranked.length} drama${ranked.length === 1 ? '' : 's'}`
+                : (SORT_LABELS[currentSort] || 'Latest Releases');
 
-            if (filtered.length === 0) {
+            if (ranked.length === 0) {
                 grid.innerHTML = '<div class="error-msg">No dramas found. Clear the search box or tap the "All" genre chip.</div>';
                 return;
             }
 
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const totalPages = Math.ceil(ranked.length / itemsPerPage);
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedDramas = filtered.slice(startIndex, startIndex + itemsPerPage);
+            const paginatedDramas = ranked.slice(startIndex, startIndex + itemsPerPage);
 
-            paginatedDramas.forEach(drama => {
+            paginatedDramas.forEach((drama, idx) => {
                 const card = document.createElement('a');
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
-                
+
+                const rankHtml = currentSort === 'rankings'
+                    ? `<span class="rank-badge">#${startIndex + idx + 1}</span>`
+                    : '';
                 const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
+                    ${rankHtml}
                     <img src="${drama.cover}" alt="${drama.title}" loading="lazy">
                     <div class="drama-info">
                         <div class="drama-title">${drama.title}</div>
@@ -326,6 +367,12 @@
             if (wantedSearch) {
                 currentSearchQuery = wantedSearch.toLowerCase().trim();
                 document.getElementById('searchInput').value = wantedSearch;
+            }
+            // Deep link: index.html?sort=new / ?sort=rankings
+            const wantedSort = params.get('sort');
+            if (wantedSort && SORT_LABELS[wantedSort]) {
+                currentSort = wantedSort;
+                document.querySelectorAll('#sortTabs .sort-tab').forEach(b => b.classList.toggle('active', b.dataset.sort === wantedSort));
             }
             buildGenreBar();
             renderHome();
