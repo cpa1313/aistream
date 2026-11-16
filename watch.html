@@ -571,7 +571,11 @@
 
             const url = candidates[activeMirror];
 
-            if (/\.mp4($|\?)/.test(url)) {
+            // MP4 detection must cover signed/extension-less CDNs too: netshort
+            // links are opaque paths + ?a=...&mime_type=video_mp4&... (no ".mp4"
+            // anywhere), and feeding one to hls.js fails manifest parsing.
+            const isMp4 = /\.mp4($|[?#])/.test(url) || /[?&]mime_type=video[_-]?mp4/.test(url);
+            if (isMp4) {
                 // Progressive MP4 (e.g. DramaBox CDN links) — play natively,
                 // no hls.js. Same mirror-fallback as the native HLS path.
                 video.addEventListener('error', () => {
