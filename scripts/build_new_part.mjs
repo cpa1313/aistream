@@ -8,10 +8,10 @@
  *   - records from new-videos.json are merged in; on a slug clash the new-videos.json
  *     version wins (re-adding a slug = updating it)
  *   - slugs already present in data-part-1/2.js are skipped with a warning (no duplicates)
- *   - records missing dateAdded get today's UTC timestamp stamped automatically — that is
+ *   - records missing dateAdded get today's UTC date stamped automatically — that is
  *     what puts new additions at the top of the site (data.js sorts dateAdded-first)
- *   - output order: dateAdded desc; ties -> higher id first. Both keys are intrinsic
- *     to the record, so re-running never reorders anything (idempotent output).
+ *   - output order: dateAdded desc; same-day ties put the most recently appended
+ *     record first, so the video you added last shows as the first card
  *
  * Layout: works both when the data files sit next to scripts/ (GitHub repo root)
  * and when they sit in download/ next to it (dev layout).
@@ -96,12 +96,14 @@ additions.forEach((r, idx) => {
     const prev = bySlug.get(r.slug);
     if (prev && prev.dateAdded) r.dateAdded = prev.dateAdded;
     if (!r.dateAdded) r.dateAdded = stamp;
-    if (!Array.isArray(r.urls) || r.urls.length === 0) console.warn(`WARN: "${r.title}" has no episode URLs`);
+    if ((!Array.isArray(r.urls) || r.urls.length === 0) && !r.epsChunk) console.warn(`WARN: "${r.title}" has no episode URLs`);
     if (bySlug.has(r.slug)) updated++; else added++;
     bySlug.set(r.slug, r);
 });
 
 // dateAdded desc (full timestamps beat plain dates); ties -> higher id first.
+// Both keys are intrinsic to the record, so re-running never reorders anything
+// (idempotent output — the Action can rebuild as often as it likes).
 const recs = [...bySlug.values()]
     .sort((a, b) => String(b.dateAdded || b.releaseDate || '').localeCompare(String(a.dateAdded || a.releaseDate || ''))
         || (Number(b.id) || 0) - (Number(a.id) || 0));

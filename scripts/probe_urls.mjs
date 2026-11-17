@@ -13,11 +13,17 @@
  *
  * Reachability = HTTP 2xx on a ranged GET (1 byte) with a browser User-Agent and
  * no Referer — the same conditions under which the site plays videos locally.
- * Network errors / 502-504 are retried once; 403/404/410 and other statuses fail.
- * Empty URL strings are warned about and skipped (the player falls through mirrors).
+ * Network errors / 502-504 are retried once.
  *
- * Exit 1 if any probed URL fails; the workflow then stops before the rebuild
- * commit, leaving the deployed site untouched.
+ * Exit policy:
+ *   FAIL (exit 1) only for STRUCTURAL problems: invalid JSON, missing slug or
+ *   title, urls not an array, or a record with no usable episode URL at all —
+ *   those mean the scrape itself is broken.
+ *   Host-level failures (403/404/410, timeout) only WARN: scraped URLs are
+ *   signed and expire fast (cdnvideo.cdreader.com batches rot within a day of
+ *   scraping, dramaboxdb Akamai tokens within a week), and one stale batch
+ *   must never gate the whole rebuild. Dead links that land anyway are
+ *   tracked by scripts/check_link_expiry.py, which produces the re-scrape list.
  *
  * Testing: set PROBE_DATA_DIR=/path/to/fixture-dir to run against a fixture
  * catalog instead of the real one.
@@ -104,6 +110,10 @@ for (const [slug, r] of bySlug) {
         console.log(`— skip "${r.title}" (unchanged since it was added)`);
         continue;
     }
+    if ((!Array.isArray(r.urls) || r.urls.length === 0) && r.epsChunk) {
+        console.log(`— skip "${r.title}" (epsChunk ${r.epsChunk} — episodes live in eps/chunk-${r.epsChunk}.js, nothing to probe)`);
+        continue;
+    }
     toProbe.push(r);
 }
 
@@ -127,6 +137,20 @@ const isBotChallenged = url => {
         return BOT_CHALLENGED_HOSTS.some(host => h === host || h.endsWith('.' + host));
     } catch { return false; }
 };
+
+// Provider-direct signed URLs that expire FAST: dramahue relays were observed
+// dead ~20 minutes after scraping (2026-11-16), dramaboxdb Akamai tokens die
+// within days. They verify OK at probe time and rot before visitors play them.
+// The bakeable variant for these platforms is the site's OWN relay URL —
+// 682 dramadunyam.com/vr/... URLs are baked and still play.
+const SHORT_TTL_HOSTS = ['dramahue.com', 'dramaboxdb.com'];
+const isShortTtl = url => {
+    try {
+        const h = new URL(url).hostname;
+        return SHORT_TTL_HOSTS.some(host => h === host || h.endsWith('.' + host));
+    } catch { return false; }
+};
+let shortTtlUrls = 0;
 
 
 async function probeUrl(url, { timeout = 10000 } = {}) {
@@ -166,32 +190,48 @@ async function pool(items, worker, size = 8) {
 }
 
 let okRecs = 0;
-const failures = [];
+const dead = [];           // expired/unreachable episode URLs — WARN, record is added anyway
+const structural = [];     // broken scrapes — FAIL the run
 let checked = 0, emptyUrls = 0, unverified = 0;
 
 for (const r of toProbe) {
     const urls = Array.isArray(r.urls) ? r.urls : [];
+    if (urls.filter(Boolean).length === 0) {
+        if (r.epsChunk) {
+            console.log(`— skip "${r.title}" (epsChunk ${r.epsChunk} — episodes live in eps/chunk-${r.epsChunk}.js, nothing to probe)`);
+            continue;
+        }
+        structural.push({ title: r.title, why: 'no usable episode URL (urls missing or all slots empty)' });
+        console.log(`  ✗ FAIL "${r.title}": no usable episode URL — broken scrape, refusing to add.`);
+        continue;
+    }
     console.log(`Probing "${r.title}" (${urls.length} episode URL(s))…`);
     const results = await pool(urls, (u) => {
         if (!u) return { empty: true };
         return probeUrl(u);
     });
-    let okCount = 0;
+    let okCount = 0, deadCount = 0;
     results.forEach((res, idx) => {
         if (res.empty) {
             emptyUrls++;
             console.log(`  ⚠ WARN "${r.title}" ep ${idx + 1}/${urls.length}: empty URL (skipped — player will fall through mirrors)`);
         } else if (res.status >= 200 && res.status < 300) {
             okCount++;
+            if (isShortTtl(urls[idx])) {
+                shortTtlUrls++;
+                console.log(`  ⚠ WARN "${r.title}" ep ${idx + 1}/${urls.length}: OK now, but host is a known short-TTL provider relay (observed expiry within ~20 min of scraping) — will likely be dead before visitors play it. Scrape the platform's own relay variant instead.`);
+            }
         } else {
+            deadCount++;
             const why = res.error ? res.error : `HTTP ${res.status}`;
             const url = urls[idx];
             if (!res.error && (res.status === 403 || res.status === 503) && isBotChallenged(url)) {
                 unverified++;
                 console.log(`  ⚠ WARN "${r.title}" ep ${idx + 1}/${urls.length} → ${why} — host challenges bots, unverifiable from Actions (verify by playback)`);
             } else {
-                failures.push({ title: r.title, ep: idx + 1, total: urls.length, why, url });
-                console.log(`  ✗ FAIL "${r.title}" ep ${idx + 1}/${urls.length} → ${why}`);
+                dead.push({ title: r.title, ep: idx + 1, total: urls.length, why, url });
+                if (isShortTtl(url)) shortTtlUrls++;
+                console.log(`  ⚠ DEAD "${r.title}" ep ${idx + 1}/${urls.length} → ${why} — added anyway; re-scrape later`);
                 console.log(`      ${url}`);
             }
         }
@@ -200,14 +240,35 @@ for (const r of toProbe) {
     if (okCount === urls.length && okCount > 0) {
         okRecs++;
         console.log(`  ✓ "${r.title}": ${okCount}/${urls.length} URLs OK`);
+    } else if (okCount === 0) {
+        structural.push({ title: r.title, why: `all ${urls.length} episode URLs unreachable (batch fully expired or bad scrape)` });
+        console.log(`  ✗ FAIL "${r.title}": 0/${urls.length} URLs reachable — refusing to add a fully-dead record.`);
+    } else {
+        console.log(`  ⚠ "${r.title}": ${okCount}/${urls.length} URLs OK, ${deadCount} dead, ${urls.length - okCount - deadCount} empty — added anyway.`);
     }
 }
 
 console.log(`\nPROBE RESULT: ${toProbe.length} record(s), ${checked} URL(s) checked — `
-    + `${okRecs} record(s) fully OK, ${failures.length} failed, ${emptyUrls} empty (skipped), ${unverified} unverifiable (bot-challenged host)`);
+    + `${okRecs} record(s) fully OK, ${dead.length} dead URL(s) (WARN — added anyway), ${emptyUrls} empty (skipped), ${unverified} unverifiable (bot-challenged host)`);
 
-if (failures.length > 0) {
-    console.log('\nPROBE FAILED — the catalog was NOT rebuilt and the site was NOT changed.');
-    console.log('Fix the listed episode URLs in new-videos.json (or remove that record) and commit again.');
+if (shortTtlUrls > 0) {
+    console.log(`\n⚠ ${shortTtlUrls} URL(s) sit on known short-TTL provider relay hosts (${SHORT_TTL_HOSTS.join(', ')}).`);
+    console.log('  They die within minutes-to-days of scraping (dramahue: ~20 min observed 2026-11-16), whether');
+    console.log('  they verify OK now or are already dead.');
+    console.log('  Bakeable alternative: the platform\'s OWN relay URL (for dramadunyam, /play WITHOUT the');
+    console.log('  X-DD-Native-MP4 header returns the dramadunyam.com relay — the variant 682 baked URLs use).');
+}
+
+if (structural.length > 0) {
+    console.log('\nPROBE FAILED — structural scrape problems:');
+    for (const s of structural) console.log(`  ✗ "${s.title}": ${s.why}`);
+    console.log('\nThe catalog was NOT rebuilt and the site was NOT changed.');
+    console.log('Fix or remove these records in new-videos.json and commit again.');
     process.exit(1);
 }
+if (dead.length > 0) {
+    console.log('\nPROBE PASSED WITH WARNINGS — dead episode URLs were added anyway (expired signed');
+    console.log('URLs are a maintenance issue, not a build blocker). Re-scrape the affected titles:');
+    console.log('scripts/check_link_expiry.py produces the current re-scrape list.');
+}
+process.exit(0);
