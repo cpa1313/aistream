@@ -499,7 +499,7 @@
                         showMsg('❌ Error: Video failed to load. Try another episode or come back later.', '#ff4444');
                     }
                 }, { once: true });
-                video.src = url;
+                video.src = proxiedUrl(url);
                 video.addEventListener('loadedmetadata', () => {
                     hideMsg();
                     video.play().catch(() => {});
@@ -510,7 +510,11 @@
             if (Hls.isSupported()) {
                 hls = new Hls({
                     xhrSetup: (xhr) => { xhr.withCredentials = false; },
-                    ...(SegmentProxyLoader ? { fLoader: SegmentProxyLoader } : {}),
+                    // pLoader is REQUIRED along with fLoader: hls.js loads the
+                    // master/level playlists via pLoader (fallback: `loader`),
+                    // never fLoader — fLoader alone leaves the first .m3u8
+                    // request going direct, which referer-locked CDNs 403.
+                    ...(SegmentProxyLoader ? { pLoader: SegmentProxyLoader, fLoader: SegmentProxyLoader } : {}),
                 });
                 hls.loadSource(url);
                 hls.attachMedia(video);
@@ -546,7 +550,7 @@
                         showMsg('❌ Error: Video failed to load.', '#ff4444');
                     }
                 }, { once: true });
-                video.src = url;
+                video.src = proxiedUrl(url);
                 video.addEventListener('loadedmetadata', () => {
                     hideMsg();
                     video.play().catch(() => {});
