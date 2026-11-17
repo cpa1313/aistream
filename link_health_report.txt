@@ -1,0 +1,14 @@
+Link health report — generated 2026-11-16 12:21 UTC
+Catalog: 25188 records (309 with inline URLs, 23944 chunk-based)
+
+RE-SCRAPE LIST (dead or expired links):
+  - mafia-single-daddys-stolen-bride  (no auth_key in URLs)
+  - reborn-to-build-my-own-empire  (no auth_key in URLs)
+  - tempestthe-last-mecha  (no auth_key in URLs)
+  - the-devil-dragons-substitute-bride-db-en  (no auth_key in URLs)
+  - the-ex-who-became-my-sister-in-law  (auth_key expires 2026-11-14 13:09 UTC)
+  - the-heirless-mafia-boss-claimed-me  (no auth_key in URLs)
+  - the-vampire-queen-s-regretful-triplets  (auth_key expires 2026-11-15 09:56 UTC)
+
+EXPIRING SOON:
+  - the-fated-luna-he-lost  (auth_key expires 2026-11-19 20:59 UTC)
