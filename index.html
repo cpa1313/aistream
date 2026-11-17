@@ -138,6 +138,28 @@
         .faq-item[open] summary::after { transform: rotate(45deg); }
         .faq-item summary:hover { color: var(--accent); }
         .faq-a { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; padding-bottom: 1rem; }
+
+        /* ===== Main nav menu ===== */
+        .nav-burger { display: none; background: none; border: 1px solid #333; color: var(--text-primary); font-size: 1.3rem; line-height: 1; border-radius: 8px; padding: 0.35rem 0.7rem; cursor: pointer; }
+        .main-nav { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-primary); text-decoration: none; font-size: 0.98rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-family: inherit; }
+        .nav-link:hover, .nav-link.active { color: var(--accent); }
+        .nav-drop { position: relative; }
+        .nav-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--bg-secondary); border: 1px solid #333; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.55); padding: 0.5rem; min-width: 240px; max-height: 65vh; overflow-y: auto; z-index: 110; }
+        .nav-drop:hover .nav-menu, .nav-drop:focus-within .nav-menu { display: block; }
+        .nav-menu-head { color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.35rem 0.75rem 0.3rem; }
+        .nav-menu a { display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; color: var(--text-primary); text-decoration: none; font-size: 0.9rem; padding: 0.45rem 0.75rem; border-radius: 6px; white-space: nowrap; }
+        .nav-menu a:hover { background: #2a2a2a; color: var(--accent); }
+        .nav-menu a .cnt { color: var(--text-secondary); font-size: 0.75rem; }
+        @media (max-width: 768px) {
+            header { flex-wrap: wrap; }
+            .nav-burger { display: inline-block; margin-left: auto; }
+            .main-nav { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0.25rem; padding-top: 0.6rem; border-top: 1px solid #333; margin-top: 0.6rem; }
+            .main-nav.open { display: flex; }
+            .nav-menu { position: static; box-shadow: none; min-width: 0; max-height: 40vh; margin-bottom: 0.25rem; }
+            .nav-drop:hover .nav-menu, .nav-drop:focus-within .nav-menu { display: none; }
+            .nav-drop.open .nav-menu, .nav-drop.open:hover .nav-menu, .nav-drop.open:focus-within .nav-menu { display: block; }
+        }
     </style>
 	<meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
 </head>
@@ -145,7 +167,69 @@
 
     <header>
         <a class="logo" href="index.html">🎬 DramaStream</a>
+        <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false">☰</button>
+        <nav class="main-nav" id="mainNav" aria-label="Main menu">
+            <a class="nav-link" href="index.html">Home</a>
+            <div class="nav-drop">
+                <button class="nav-link nav-drop-btn" type="button">Genres ▾</button>
+                <div class="nav-menu" id="navGenres"></div>
+            </div>
+            <div class="nav-drop">
+                <button class="nav-link nav-drop-btn" type="button">Platforms ▾</button>
+                <div class="nav-menu" id="navPlatforms"></div>
+            </div>
+            <a class="nav-link" href="index.html?sort=new">New</a>
+            <a class="nav-link" href="index.html?sort=rankings">Rankings</a>
+        </nav>
     </header>
+    <script>
+        /* Main menu — dropdown lists are built from the live catalog so counts
+           always match what is on the site. Genre/platform entries deep-link to
+           index.html?genre=… / ?platform=…, which works from the watch page too. */
+        (function buildMainMenu() {
+            const cat = (typeof dramas !== 'undefined') ? dramas : [];
+            const PLATFORM_LABELS = { dramawave:'DramaWave', blinkdrama:'BlinkDrama', yourchannel:'YourChannel', goodshort:'GoodShort', reelshort:'ReelShort', stardust:'Stardust', flickreels:'FlickReels', livoshort:'LivoShort', cinerra:'Cinerra', miraluneshort:'Miralune Short', rivoshort:'RivoShort', joyreels:'JoyReels', idrama:'iDrama', snackshort:'SnackShort', flareflow:'FlareFlow', netshort:'NetShort', meloshort:'MeloShort', moboreels:'MoboReels', vibeshort:'VibeShort', minishort:'MiniShort', shotshort:'ShotShort', dramora:'Dramora', shortmax:'ShortMax', dramabox:'DramaBox', happyshort:'HappyShort' };
+            window.navPlatformLabel = p => PLATFORM_LABELS[p] || (p ? p.charAt(0).toUpperCase() + p.slice(1) : p);
+            const genreNames = d => (d.genres || []).map(g => typeof g === 'string' ? g
+                : (g && typeof g === 'object' ? (g.name || g.title || g.genre || g.label || '') : '')).filter(Boolean);
+
+            const gCounts = new Map();
+            cat.forEach(d => genreNames(d).forEach(g => gCounts.set(g, (gCounts.get(g) || 0) + 1)));
+            const pCounts = new Map();
+            cat.forEach(d => { const p = (d.platform || '').toLowerCase().trim(); if (p && p !== 'other') pCounts.set(p, (pCounts.get(p) || 0) + 1); });
+
+            const gEl = document.getElementById('navGenres');
+            if (gEl) gEl.innerHTML = '<div class="nav-menu-head">Browse by genre</div>'
+                + [...gCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20)
+                    .map(([g, c]) => `<a href="index.html?genre=${encodeURIComponent(g)}">${g}<span class="cnt">${c.toLocaleString('en-US')}</span></a>`).join('');
+            const pEl = document.getElementById('navPlatforms');
+            if (pEl) pEl.innerHTML = '<div class="nav-menu-head">Browse by platform</div>'
+                + [...pCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 14)
+                    .map(([p, c]) => `<a href="index.html?platform=${encodeURIComponent(p)}">${window.navPlatformLabel(p)}<span class="cnt">${c.toLocaleString('en-US')}</span></a>`).join('');
+
+            const burger = document.getElementById('navBurger');
+            const nav = document.getElementById('mainNav');
+            if (!burger || !nav) return;
+            burger.addEventListener('click', () => {
+                const open = nav.classList.toggle('open');
+                burger.setAttribute('aria-expanded', open);
+                burger.textContent = open ? '✕' : '☰';
+            });
+            nav.querySelectorAll('.nav-drop-btn').forEach(btn => btn.addEventListener('click', () => {
+                const drop = btn.closest('.nav-drop');
+                const wasOpen = drop.classList.contains('open');
+                nav.querySelectorAll('.nav-drop.open').forEach(d => d.classList.remove('open'));
+                if (!wasOpen) drop.classList.add('open');
+            }));
+            nav.addEventListener('click', e => {
+                if (!e.target.closest('a')) return;
+                nav.classList.remove('open');
+                burger.textContent = '☰';
+                burger.setAttribute('aria-expanded', 'false');
+                nav.querySelectorAll('.nav-drop.open').forEach(d => d.classList.remove('open'));
+            });
+        })();
+    </script>
 
     <div class="container">
         <h1 class="seo-h1">Watch Full Short Dramas Online Free</h1>
@@ -200,6 +284,7 @@
         const itemsPerPage = 20; // Changed to 20 videos per page
         let currentSearchQuery = '';
         let currentGenre = '';
+        let currentPlatform = ''; // set via ?platform= deep link from the nav menu
         let currentSort = 'popular';
 
         // Popular = highest rated first (unrated titles sink, ties keep catalog
@@ -302,6 +387,9 @@
                 const g = currentGenre.toLowerCase();
                 filtered = filtered.filter(d => genreNames(d).some(x => x.toLowerCase() === g));
             }
+            if (currentPlatform) {
+                filtered = filtered.filter(d => (d.platform || '').toLowerCase() === currentPlatform);
+            }
             if (currentSearchQuery) {
                 filtered = filtered.filter(d => 
                     d.title.toLowerCase().includes(currentSearchQuery) || 
@@ -316,9 +404,10 @@
             }
 
             const titleEl = document.getElementById('sectionTitle');
-            titleEl.textContent = currentGenre
+            const platPrefix = currentPlatform ? (window.navPlatformLabel ? window.navPlatformLabel(currentPlatform) : currentPlatform) + ' — ' : '';
+            titleEl.textContent = platPrefix + (currentGenre
                 ? `${currentGenre} — ${ranked.length} drama${ranked.length === 1 ? '' : 's'}`
-                : (SORT_LABELS[currentSort] || 'Latest Releases');
+                : (SORT_LABELS[currentSort] || 'Latest Releases'));
 
             if (ranked.length === 0) {
                 grid.innerHTML = '<div class="error-msg">No dramas found. Clear the search box or tap the "All" genre chip.</div>';
@@ -435,12 +524,23 @@
                 currentSearchQuery = wantedSearch.toLowerCase().trim();
                 document.getElementById('searchInput').value = wantedSearch;
             }
+            // Deep link: index.html?platform=dramabox (from the nav menu Platforms list)
+            const wantedPlatform = params.get('platform');
+            if (wantedPlatform) {
+                const wp = wantedPlatform.toLowerCase();
+                if (dramas.some(d => (d.platform || '').toLowerCase() === wp)) currentPlatform = wp;
+            }
             // Deep link: index.html?sort=new / ?sort=rankings
             const wantedSort = params.get('sort');
             if (wantedSort && SORT_LABELS[wantedSort]) {
                 currentSort = wantedSort;
                 document.querySelectorAll('#sortTabs .sort-tab').forEach(b => b.classList.toggle('active', b.dataset.sort === wantedSort));
             }
+            // Highlight the active New/Rankings nav link
+            document.querySelectorAll('#mainNav .nav-link').forEach(a => {
+                const s = a.search ? new URLSearchParams(a.search).get('sort') : null;
+                a.classList.toggle('active', !!s && s === currentSort);
+            });
             buildGenreBar();
             renderHome();
         });
