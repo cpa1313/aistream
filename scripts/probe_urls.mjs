@@ -7,6 +7,9 @@
  * What gets probed:
  *   - records from new-videos.json whose slug is NOT yet stored in data-part-3.js
  *     (new additions), or whose urls array differs from the stored version (updates)
+ *   - resolver-backed records (source 'dramadunyam' + numeric id, urls empty):
+ *     probed via the deployed fresh-link worker's /dun/{id}/1 — WARN-only,
+ *     never FAIL (the upstream flaps under burst; the worker self-heals)
  *   - everything else is skipped: the main catalog (part 1/2) is never re-probed,
  *     and records already stored unchanged are not re-checked — so signed URLs
  *     expiring later can never block future builds.
@@ -152,6 +155,31 @@ const isShortTtl = url => {
 };
 let shortTtlUrls = 0;
 
+// Fresh-link resolver-backed records: a record with source 'dramadunyam' and a
+// numeric id needs NO stored episode URL — watch.html plays it through the
+// deployed worker's /dun/{id}/{ep} route, which 302s to a freshly signed
+// relay (watchdramareels first, dramadunyam fallback). The probe checks ep1
+// THROUGH THE WORKER — the same path a visitor's player uses. The upstream
+// flaps under burst load (502/timeout on one try, 200 on the next — observed
+// 2026-11-18), so a failure here is a WARN and the record is added anyway:
+// the resolver recovers upstream-side without a rebuild, and
+// check_link_expiry.py tracks the dead list afterwards.
+const DUN_RESOLVER_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/dun';
+const isResolverBacked = r => r.source === 'dramadunyam' && /^\d+$/.test(String(r.id));
+const resolverQueue = [];
+let resolverSeen = 0;
+// Deterministic sample: every Nth resolver-backed record (index-stable across
+// runs, so the same titles are re-checked each rebuild). Probing all 5k+ at
+// once bursts the upstream /play API, which both rate-limits bursts AND
+// soft-blocks with a fake "durum: yok" (episode-not-exist) once a ticket/IP
+// is flagged — observed 2026-11-18: an id resolved 2xx twice, then answered
+// 'yok' to every request after a probe burst, then resolved again. So the
+// sample is 1-in-40, probed 1-at-a-time with a gap: ~130 gentle requests
+// instead of 5,311 hammering ones. Full dead-tracking is
+// check_link_expiry.py's job, not the rebuild gate's.
+const RESOLVER_SAMPLE_EVERY = 40;
+const RESOLVER_PROBE_GAP_MS = 250;
+
 
 async function probeUrl(url, { timeout = 10000 } = {}) {
     for (let attempt = 1; attempt <= 2; attempt++) {
@@ -201,6 +229,11 @@ for (const r of toProbe) {
             console.log(`— skip "${r.title}" (epsChunk ${r.epsChunk} — episodes live in eps/chunk-${r.epsChunk}.js, nothing to probe)`);
             continue;
         }
+        if (isResolverBacked(r)) {
+            resolverSeen++;
+            if ((resolverSeen - 1) % RESOLVER_SAMPLE_EVERY === 0) resolverQueue.push(r);
+            continue;
+        }
         structural.push({ title: r.title, why: 'no usable episode URL (urls missing or all slots empty)' });
         console.log(`  ✗ FAIL "${r.title}": no usable episode URL — broken scrape, refusing to add.`);
         continue;
@@ -248,8 +281,31 @@ for (const r of toProbe) {
     }
 }
 
+// Resolver-backed records: one /dun/{id}/1 request each, pooled. All results
+// are informational — OK or WARN-dead — never a FAIL (see the block comment
+// above about upstream flapping).
+let resolverOk = 0, resolverDead = 0;
+if (resolverQueue.length > 0) {
+    console.log(`\nProbing ${resolverQueue.length} resolver-backed record(s) via ${DUN_RESOLVER_BASE}/{id}/1…`);
+    await pool(resolverQueue, async (r) => {
+        const res = await probeUrl(`${DUN_RESOLVER_BASE}/${r.id}/1`, { timeout: 12000 });
+        await new Promise(sleep => setTimeout(sleep, RESOLVER_PROBE_GAP_MS));
+        if (res && res.status >= 200 && res.status < 300) {
+            resolverOk++;
+        } else {
+            resolverDead++;
+            const why = res && res.error ? res.error : `HTTP ${res ? res.status : '?'}`;
+            dead.push({ title: r.title, ep: 1, total: 1, why: `fresh-link resolver: ${why}`, url: `${DUN_RESOLVER_BASE}/${r.id}/1` });
+            if (resolverDead <= 25) console.log(`  ⚠ DEAD (resolver) "${r.title}" (id ${r.id}) ep1 → ${why} — added anyway; re-scrape later`);
+        }
+        if ((resolverOk + resolverDead) % 250 === 0) console.log(`  … ${resolverOk + resolverDead}/${resolverQueue.length} probed (${resolverOk} ok, ${resolverDead} dead)`);
+    }, 1);
+    console.log(`  resolver-backed: ${resolverOk}/${resolverQueue.length} OK via the fresh-link worker, ${resolverDead} dead (WARN — added anyway)`);
+}
+
 console.log(`\nPROBE RESULT: ${toProbe.length} record(s), ${checked} URL(s) checked — `
-    + `${okRecs} record(s) fully OK, ${dead.length} dead URL(s) (WARN — added anyway), ${emptyUrls} empty (skipped), ${unverified} unverifiable (bot-challenged host)`);
+    + `${okRecs} record(s) fully OK, ${dead.length} dead URL(s) (WARN — added anyway), ${emptyUrls} empty (skipped), ${unverified} unverifiable (bot-challenged host), `
+    + `${resolverQueue.length} resolver-backed sampled of ${resolverSeen} (${resolverOk} OK via worker)`);
 
 if (shortTtlUrls > 0) {
     console.log(`\n⚠ ${shortTtlUrls} URL(s) sit on known short-TTL provider relay hosts (${SHORT_TTL_HOSTS.join(', ')}).`);
