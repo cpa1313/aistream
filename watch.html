@@ -62,6 +62,9 @@
 
         /* Two-column layout */
         .main-layout { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; }
+        /* grid items must be allowed to shrink below their content's min width,
+           or one wide child forces horizontal page scroll on phones */
+        .main-layout > * { min-width: 0; }
         @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
 
         .video-wrapper { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.6); aspect-ratio: 16/9; position: relative; margin-bottom: 1.5rem; }
@@ -73,7 +76,7 @@
         .episode-header h3 { font-size: 1.2rem; }
         .episode-count { color: var(--accent); font-size: 0.9rem; }
 
-        .episode-navigation { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+        .episode-navigation { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
         .nav-btn { padding: 0.75rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
         .nav-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
         .episode-select { flex: 1; padding: 0.75rem; background: var(--bg-primary); color: var(--text-primary); border: 1px solid #333; border-radius: 6px; font-size: 1rem; cursor: pointer; min-width: 150px; }
@@ -110,7 +113,7 @@
         .sidebar { position: sticky; top: 80px; height: fit-content; }
         .sidebar-ad { background: var(--bg-secondary); border: 1px dashed #444; border-radius: 8px; padding: 1rem; text-align: center; min-height: 250px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 1rem; }
 
-        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.2rem; pointer-events: none; }
+        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: max-content; max-width: 92%; text-align: center; color: white; font-size: 1.2rem; pointer-events: none; }
         .error-msg { color: #ff4444; text-align: center; padding: 2rem; font-size: 1.1rem; background: #2a1a1a; border-radius: 8px; border: 1px solid #ff4444; }
 
         @media (max-width: 768px) {
@@ -118,6 +121,12 @@
             .drama-title { font-size: 1.4rem; }
             .sidebar { position: static; }
         }
+
+        /* ===== Now playing (cover + title above the player) ===== */
+        .now-playing { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+        .np-cover { width: 110px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: #222; box-shadow: 0 4px 14px rgba(0,0,0,0.5); flex-shrink: 0; }
+        .np-text { flex: 1; min-width: 0; }
+        @media (max-width: 640px) { .np-cover { width: 86px; } }
 
         /* ===== Main nav menu ===== */
         .nav-burger { display: none; background: none; border: 1px solid #333; color: var(--text-primary); font-size: 1.3rem; line-height: 1; border-radius: 8px; padding: 0.35rem 0.7rem; cursor: pointer; }
@@ -217,13 +226,24 @@
             <!-- Main Content (Left Column) -->
             <div class="main-content">
 
-                <!-- 1. Video Player -->
+                <!-- 1. Now Playing: cover + title + meta + genres, so visitors
+                     can always tell which video is up before pressing play -->
+                <div class="now-playing" id="nowPlaying">
+                    <img class="np-cover" id="playerCover" src="" alt="">
+                    <div class="np-text">
+                        <h1 class="drama-title" id="playerTitle"></h1>
+                        <div class="meta-info" id="metaInfo"></div>
+                        <div class="genre-tags" id="playerGenres"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Video Player -->
                 <div class="video-wrapper">
                     <div class="loading" id="loadingText">Loading video...</div>
                     <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
                 </div>
 
-                <!-- 2. Episode Section (Above Title) -->
+                <!-- 3. Episode Section -->
                 <div class="episode-section">
                     <div class="episode-header">
                         <h3>Episodes <span class="episode-count" id="episodeCount"></span></h3>
@@ -239,14 +259,8 @@
                     <div class="episode-grid" id="episodeGrid"></div>
                 </div>
 
-                <!-- 3. Drama Information (Below Episodes) -->
+                <!-- 4. Description & details (cover + title live above the player) -->
                 <div class="drama-info">
-                    <h1 class="drama-title" id="playerTitle"></h1>
-
-                    <div class="meta-info" id="metaInfo"></div>
-
-                    <div class="genre-tags" id="playerGenres"></div>
-
                     <p class="drama-description" id="playerDesc"></p>
 
                     <div class="drama-about" id="playerAbout" style="display: none;"></div>
@@ -304,6 +318,12 @@
            ============================================ */
         const SEGMENT_PROXY_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/?u=';
         const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net', 'v.73920582.xyz', 'v.73920583.xyz'];
+        // Fresh-link resolver (worker v3): for dramadunyam-sourced titles whose
+        // stored links carry short-lived signatures (gorogoro auth_keys die
+        // ~2h after scrape), watch.html adds WORKER/dun/{id}/{ep} as the LAST
+        // mirror. Stored links are tried first; if they fail, the worker 302-
+        // redirects to a freshly signed relay from dramadunyam's /play API.
+        const DUN_RESOLVER_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/dun';
         function proxiedUrl(url) {
             if (!SEGMENT_PROXY_BASE) return url;
             try {
@@ -336,19 +356,35 @@
             return chunkCache[n];
         }
 
-        async function resolveSources(drama) {
-            if (drama.urls && drama.urls.length) return [drama.urls];
+        function dunResolverMirror(count) {
+            // Fresh-link fallback: one resolver URL per episode position.
+            // The worker 302-redirects to a freshly signed dramadunyam relay;
+            // episodes dun can't serve return 404 and just show the normal error.
+            if (!DUN_RESOLVER_BASE || !currentDrama) return null;
+            if (currentDrama.source !== 'dramadunyam') return null;
+            if (!/^\d+$/.test(String(currentDrama.id))) return null;
+            return Array.from({ length: count }, (_, i) => `${DUN_RESOLVER_BASE}/${currentDrama.id}/${i + 1}`);
+        }
 
-            if (drama.epsChunk) {
+        async function resolveSources(drama) {
+            let base = null;
+            if (drama.urls && drama.urls.length) {
+                base = [drama.urls];
+            } else if (drama.epsChunk) {
                 try { await loadChunkScript(drama.epsChunk); } catch (e) { throw e; }
                 const rec = window.DB_EPS[drama.slug];
                 // chunk files store {"slug": [ep1url, ep2url, ...]} — one flat
                 // array (first mirror). Wrap it as [[...]] so mirror handling
                 // stays uniform; tolerate nested arrays just in case.
-                if (Array.isArray(rec) && rec.length) return Array.isArray(rec[0]) ? rec : [rec];
-                if (rec && rec.mirrors && rec.mirrors.length) return rec.mirrors;
+                if (Array.isArray(rec) && rec.length) base = Array.isArray(rec[0]) ? rec : [rec];
+                else if (rec && rec.mirrors && rec.mirrors.length) base = rec.mirrors;
             }
-            return [];
+
+            currentDrama = drama; // dunResolverMirror reads id/source off it
+            const resolver = dunResolverMirror(drama.episodes || (base && base[0] && base[0].length) || 0);
+            if (!base) return resolver ? [resolver] : [];       // nothing stored — resolver-only bootstrap
+            if (resolver) base.push(resolver);                  // stored first, fresh-link fallback last
+            return base;
         }
 
         function candidatesFor(episode) {
@@ -455,6 +491,18 @@
             activeMirror = 0;
 
             document.getElementById('playerTitle').textContent = drama.title;
+
+            // Show which video this is: cover card image + poster behind the player
+            const coverEl = document.getElementById('playerCover');
+            if (drama.cover) {
+                coverEl.src = drama.cover;
+                coverEl.alt = drama.title + ' cover';
+                coverEl.style.display = '';
+            } else {
+                coverEl.style.display = 'none';
+            }
+            document.getElementById('videoPlayer').poster = drama.cover || '';
+
             document.getElementById('playerDesc').textContent = drama.description || drama.about || "No description available.";
             document.getElementById('playerPlatform').textContent = (drama.platform || 'unknown').toUpperCase();
             document.getElementById('episodeCount').textContent = `(${drama.episodes} episodes)`;
@@ -619,6 +667,8 @@
                         try { failHost = data.frag && data.frag.url ? new URL(data.frag.url).hostname : ''; } catch {}
                         if (!SEGMENT_PROXY_BASE && SEGMENT_PROXY_HOSTS.includes(failHost)) {
                             showMsg('❌ Error: this title\'s video CDN blocks playback from hosted sites. Fix: deploy segment-proxy-worker.js (see README), then set SEGMENT_PROXY_BASE in this file.', '#ff4444');
+                        } else if (candidates[activeMirror] && candidates[activeMirror].includes('/dun/')) {
+                            showMsg('❌ Fresh-link resolver could not fetch a new link from dramadunyam (it may be blocking server requests right now). Try again later — or re-scrape this title and update new-videos.json.', '#ff4444');
                         } else {
                             showMsg('❌ Error: Video failed to load (' + (data.details || 'network error') + '). Try another episode or come back later.', '#ff4444');
                         }
