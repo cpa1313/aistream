@@ -287,11 +287,37 @@
         let currentPlatform = ''; // set via ?platform= deep link from the nav menu
         let currentSort = 'popular';
 
-        // Popular = highest rated first (unrated titles sink, ties keep catalog
-        // order via the stable sort). New = catalog order as scraped. Rankings =
-        // same rating sort plus a #rank badge on each poster.
+        // Popular = most viewed first when view counts exist (fetched from the
+        // counter worker, see VIEWS_API below); with no counts yet it falls back
+        // to highest-rated-first so the tab is never worse than before. Unrated
+        // titles and uncounted slugs sink, ties keep catalog order (stable sort).
+        // New = catalog order as scraped. Rankings = rating sort (unrated counts
+        // as 0), and each poster shows its rating out of 5 (unrated shows 0)
+        // instead of the old #rank badge.
         const SORT_LABELS = { popular: 'Popular Dramas', new: 'Latest Releases', rankings: 'Top Rankings' };
         const byRating = (a, b) => (b.rating || 0) - (a.rating || 0);
+
+        // ---- view counts (Popular tab) ----
+        // VIEWS_API: base URL of the view-counter worker (views-worker.js).
+        // Deploy that worker, bind a KV namespace as VIEWS, then paste its URL
+        // here AND into watch.html. Leave '' to keep Popular on the
+        // rating-based order (view counts play no role).
+        const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
+        let viewCounts = {};    // slug -> view count
+        let viewsPromise = null;
+        function loadViews() {
+            if (!VIEWS_API || viewsPromise) return viewsPromise || Promise.resolve({});
+            viewsPromise = fetch(VIEWS_API + '/views')
+                .then(r => r.ok ? r.json() : {})
+                .then(m => {
+                    viewCounts = (m && typeof m === 'object') ? m : {};
+                    if (currentSort === 'popular') renderHome(); // re-sort once counts arrive
+                    return viewCounts;
+                })
+                .catch(() => { viewsPromise = null; return {}; });
+            return viewsPromise;
+        }
+        const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
 
         function setSort(s) {
             if (!SORT_LABELS[s]) return;
@@ -399,7 +425,9 @@
             }
 
             let ranked = filtered;
-            if (currentSort === 'popular' || currentSort === 'rankings') {
+            if (currentSort === 'popular') {
+                ranked = filtered.slice().sort(Object.keys(viewCounts).length ? byViews : byRating);
+            } else if (currentSort === 'rankings') {
                 ranked = filtered.slice().sort(byRating);
             }
 
@@ -423,8 +451,10 @@
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
 
+                // Rankings badge: the title's rating out of 5 (records store
+                // 0-10, so /2 for display); titles without a rating show 0.
                 const rankHtml = currentSort === 'rankings'
-                    ? `<span class="rank-badge">#${startIndex + idx + 1}</span>`
+                    ? `<span class="rank-badge">${drama.rating ? (drama.rating / 2).toFixed(1) : '0'}</span>`
                     : '';
                 const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
@@ -543,6 +573,7 @@
             });
             buildGenreBar();
             renderHome();
+            loadViews(); // Popular switches to most-viewed once counts arrive
         });
     </script>
     <section class="seo-block">

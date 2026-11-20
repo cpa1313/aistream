@@ -407,6 +407,14 @@
             if (slug) {
                 const drama = dramas.find(d => d.slug === slug);
                 if (drama) {
+                    // View beacon — one fire-and-forget hit per watch-page load;
+                    // the counter worker (views-worker.js) aggregates these for
+                    // the Popular tab. Keep VIEWS_API identical to index.html
+                    // ('' disables tracking silently).
+                    const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
+                    if (VIEWS_API) {
+                        try { fetch(`${VIEWS_API}/view?slug=${encodeURIComponent(drama.slug)}`, { keepalive: true }).catch(() => {}); } catch (e) {}
+                    }
                     loadPlayer(drama);
                     updateSEO(drama);
                 } else {
