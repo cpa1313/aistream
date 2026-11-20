@@ -89,7 +89,9 @@
         .sort-tab:hover { color: var(--text-primary); }
         .sort-tab.active { background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; box-shadow: 0 2px 12px rgba(255,138,30,0.35); }
         .drama-card { position: relative; }
-        .rank-badge { position: absolute; top: 8px; left: 8px; background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; font-weight: 800; font-size: 0.85rem; padding: 2px 9px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.55); z-index: 2; }
+        .rank-badge { position: absolute; top: 8px; left: 8px; background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; font-weight: 800; font-size: 0.85rem; padding: 2px 9px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.55); z-index: 2; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; max-width: calc(100% - 16px); overflow: hidden; }
+        .rank-badge .rank-vw { font-weight: 700; font-size: 0.72rem; opacity: 0.85; }
+        .rank-badge .rank-vw::before { content: '\00B7'; font-weight: 800; }
 
         .drama-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
         .drama-card { background: var(--bg-secondary); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: block; }
@@ -161,7 +163,7 @@
             .nav-drop.open .nav-menu, .nav-drop.open:hover .nav-menu, .nav-drop.open:focus-within .nav-menu { display: block; }
         }
     </style>
-	<meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
+        <meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
 </head>
 <body>
 
@@ -291,11 +293,16 @@
         // counter worker, see VIEWS_API below); with no counts yet it falls back
         // to highest-rated-first so the tab is never worse than before. Unrated
         // titles and uncounted slugs sink, ties keep catalog order (stable sort).
-        // New = catalog order as scraped. Ratings = rating sort (unrated counts
-        // as 0), and each poster shows its rating on the raw 0-10 scale
-        // (unrated shows 0) instead of the old #rank badge.
+        // New = catalog order as scraped. Ratings = highest rating first on the
+        // raw 0-10 scale (unrated counts as 0); titles with the SAME rating then
+        // compete on view counts, so the most-watched 9.9 leads the other 9.9s.
+        // Each poster shows its rating plus its view count, so visitors can see
+        // why a title sits where it does.
         const SORT_LABELS = { popular: 'Popular Dramas', new: 'Latest Releases', rankings: 'Top Ratings' };
         const byRating = (a, b) => (b.rating || 0) - (a.rating || 0);
+        const byRatingThenViews = (a, b) =>
+            (b.rating || 0) - (a.rating || 0) ||
+            (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
 
         // ---- view counts (Popular tab) ----
         // VIEWS_API: base URL of the view-counter worker (views-worker.js).
@@ -311,13 +318,20 @@
                 .then(r => r.ok ? r.json() : {})
                 .then(m => {
                     viewCounts = (m && typeof m === 'object') ? m : {};
-                    if (currentSort === 'popular') renderHome(); // re-sort once counts arrive
+                    // Ratings uses the counts too (tie-breaks + views chip):
+                    if (currentSort === 'popular' || currentSort === 'rankings') renderHome();
                     return viewCounts;
                 })
                 .catch(() => { viewsPromise = null; return {}; });
             return viewsPromise;
         }
         const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
+        // 42 -> "42", 1234 -> "1.2K", 1234567 -> "1.2M" (for the Ratings badge)
+        function fmtViews(n) {
+            if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+            return String(n);
+        }
 
         function setSort(s) {
             if (!SORT_LABELS[s]) return;
@@ -428,7 +442,8 @@
             if (currentSort === 'popular') {
                 ranked = filtered.slice().sort(Object.keys(viewCounts).length ? byViews : byRating);
             } else if (currentSort === 'rankings') {
-                ranked = filtered.slice().sort(byRating);
+                // rating first, views break the ties
+                ranked = filtered.slice().sort(byRatingThenViews);
             }
 
             const titleEl = document.getElementById('sectionTitle');
@@ -452,10 +467,16 @@
                 card.href = `watch.html?slug=${drama.slug}`;
 
                 // Ratings badge: the title's rating on the raw 0-10 scale
-                // (10 highest); titles without a rating show 0.
-                const rankHtml = currentSort === 'rankings'
-                    ? `<span class="rank-badge">${drama.rating ? drama.rating.toFixed(1) : '0'}</span>`
-                    : '';
+                // (10 highest); titles without a rating show 0. Once view counts
+                // are in, the badge also shows the views so visitors can see why
+                // a title outranks another one with the same rating. Titles with
+                // no views yet show the rating only.
+                let rankHtml = '';
+                if (currentSort === 'rankings') {
+                    const v = viewCounts[drama.slug] || 0;
+                    const vw = v > 0 ? `<span class="rank-vw">${fmtViews(v)} views</span>` : '';
+                    rankHtml = `<span class="rank-badge">${drama.rating ? drama.rating.toFixed(1) : '0'}${vw}</span>`;
+                }
                 const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
                     ${rankHtml}
