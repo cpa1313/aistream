@@ -97,6 +97,7 @@
         .rank-badge { position: absolute; top: 8px; left: 8px; background: linear-gradient(180deg, #ffc94d, #ff8a1e); color: #201303; font-weight: 800; font-size: 0.85rem; padding: 2px 9px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.55); z-index: 2; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; max-width: calc(100% - 16px); overflow: hidden; }
         .rank-badge .rank-vw { font-weight: 700; font-size: 0.72rem; opacity: 0.85; }
         .rank-badge .rank-vw::before { content: '\00B7'; font-weight: 800; }
+        .rank-badge.vw-only .rank-vw::before { content: ''; }  /* no dot when there is no rating in front */
 
         .drama-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
         .drama-card { background: var(--bg-secondary); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: block; }
@@ -325,14 +326,14 @@
                 .then(m => {
                     viewCounts = (m && typeof m === 'object') ? m : {};
                     // Ratings uses the counts too (tie-breaks + views chip):
-                    if (currentSort === 'popular' || currentSort === 'rankings') renderHome();
+                    if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
                     return viewCounts;
                 })
                 .catch(() => { viewsPromise = null; return {}; });
             return viewsPromise;
         }
         const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
-        // 42 -> "42", 1234 -> "1.2K", 1234567 -> "1.2M" (for the Ratings badge)
+        // 42 -> "42", 1234 -> "1.2K", 1234567 -> "1.2M" (for the badges)
         function fmtViews(n) {
             if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
             if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
@@ -472,16 +473,19 @@
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
 
-                // Ratings badge: the title's rating on the raw 0-10 scale
-                // (10 highest); titles without a rating show 0. Once view counts
-                // are in, the badge also shows the views so visitors can see why
-                // a title outranks another one with the same rating. Titles with
-                // no views yet show the rating only.
+                // Badges: Ratings shows "9.9 · 12K views" (the rating plus the
+                // views behind the tie-break). Popular and New show a views-only
+                // chip (same badge style, no rating number): Popular is sorted
+                // by views, New by date — the chip tells visitors how much each
+                // title has been watched. Titles with no views yet (brand-new
+                // adds, or the counter being unreachable) show no chip.
                 let rankHtml = '';
+                const v = viewCounts[drama.slug] || 0;
                 if (currentSort === 'rankings') {
-                    const v = viewCounts[drama.slug] || 0;
                     const vw = v > 0 ? `<span class="rank-vw">${fmtViews(v)} views</span>` : '';
                     rankHtml = `<span class="rank-badge">${drama.rating ? drama.rating.toFixed(1) : '0'}${vw}</span>`;
+                } else if (currentSort === 'popular' || currentSort === 'new') {
+                    if (v > 0) rankHtml = `<span class="rank-badge vw-only"><span class="rank-vw">${fmtViews(v)} views</span></span>`;
                 }
                 const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
