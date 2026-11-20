@@ -82,6 +82,11 @@
         .genre-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
         .genre-chip .cnt { color: var(--text-secondary); font-size: 0.75rem; margin-left: 4px; }
         .genre-chip.active .cnt { color: rgba(255,255,255,0.85); }
+        /* Mobile-only slot: JS re-parents #genreBar into it (below the page
+           navigation, above the FAQ) when the viewport is <= 768px — see
+           placeGenreBar() in the init script. Empty and invisible on desktop. */
+        .genre-bar-bottom { margin-top: 1rem; }
+        .genre-bar-bottom:empty { display: none; }
 
         /* Popular / New / Ratings pill tabs */
         .sort-tabs { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 44px; padding: 0.35rem; margin-bottom: 1.5rem; }
@@ -247,6 +252,7 @@
         <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Popular Dramas</h2>
         <div class="drama-grid" id="dramaGrid"></div>
         <div class="pagination" id="paginationControls"></div>
+        <div id="genreBarBottom" class="genre-bar-bottom"></div>
 
         <section class="faq-section" aria-label="Frequently asked questions">
             <h2 class="faq-heading">Frequently Asked Questions</h2>
@@ -595,6 +601,32 @@
             buildGenreBar();
             renderHome();
             loadViews(); // Popular switches to most-viewed once counts arrive
+
+            // Mobile only: re-parent the genre bar below the page navigation
+            // (above the FAQ) so the drama grid starts right under the search
+            // box — too many chips pushed the grid far down on phones. Desktop
+            // keeps the chips under the search box, unchanged. It is the same
+            // single DOM node being moved, so the active chip, the click
+            // listeners and the counts all survive, and updateGenreBar() (which
+            // targets #genreBar by id) works wherever the bar currently lives.
+            const genreBarEl = document.getElementById('genreBar');
+            const genreBarTopParent = genreBarEl.parentElement;
+            const genreBarTopNext = genreBarEl.nextElementSibling;
+            const genreBarBottomSlot = document.getElementById('genreBarBottom');
+            const mobileViewport = window.matchMedia('(max-width: 768px)');
+            function placeGenreBar() {
+                if (mobileViewport.matches) {
+                    genreBarBottomSlot.appendChild(genreBarEl);
+                } else {
+                    genreBarTopParent.insertBefore(genreBarEl, genreBarTopNext);
+                }
+            }
+            placeGenreBar();
+            if (mobileViewport.addEventListener) {
+                mobileViewport.addEventListener('change', placeGenreBar);
+            } else if (mobileViewport.addListener) { // older Safari
+                mobileViewport.addListener(placeGenreBar);
+            }
         });
     </script>
     <section class="seo-block">
