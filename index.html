@@ -52,7 +52,7 @@
         { "@type": "Question", "name": "What are short dramas (vertical series)?",
           "acceptedAnswer": { "@type": "Answer", "text": "Short dramas are bite-sized series made for phones: vertical video, episodes of one to three minutes, and fast-paced stories you can binge in one sitting. Popular genres include billionaire and CEO romances, revenge plots, werewolf and fated-mate fantasies, and hidden-identity thrillers." } },
         { "@type": "Question", "name": "What can I watch on DramaStream?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire & CEO, revenge, werewolf, contract marriage, divorce & exes and more. Use the Popular and Rankings tabs to see the highest-rated titles, or New for the latest additions." } },
+          "acceptedAnswer": { "@type": "Answer", "text": "Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire & CEO, revenge, werewolf, contract marriage, divorce & exes and more. Use the Popular and Ratings tabs to see the highest-rated titles, or New for the latest additions." } },
         { "@type": "Question", "name": "How often are new dramas added?",
           "acceptedAnswer": { "@type": "Answer", "text": "New releases are added daily. Tap the New tab (or open fulldrama.stream/?sort=new) to see everything added most recently first." } },
         { "@type": "Question", "name": "How does DramaStream handle copyright?",
@@ -83,7 +83,7 @@
         .genre-chip .cnt { color: var(--text-secondary); font-size: 0.75rem; margin-left: 4px; }
         .genre-chip.active .cnt { color: rgba(255,255,255,0.85); }
 
-        /* Popular / New / Rankings pill tabs */
+        /* Popular / New / Ratings pill tabs */
         .sort-tabs { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 44px; padding: 0.35rem; margin-bottom: 1.5rem; }
         .sort-tab { display: inline-flex; align-items: center; gap: 0.45rem; border: none; background: transparent; color: var(--text-secondary); font-size: 1rem; font-weight: 700; padding: 0.6rem 1.5rem; border-radius: 44px; cursor: pointer; transition: color 0.2s, background 0.2s; }
         .sort-tab:hover { color: var(--text-primary); }
@@ -179,7 +179,7 @@
                 <div class="nav-menu" id="navPlatforms"></div>
             </div>
             <a class="nav-link" href="index.html?sort=new">New</a>
-            <a class="nav-link" href="index.html?sort=rankings">Rankings</a>
+            <a class="nav-link" href="index.html?sort=rankings">Ratings</a>
         </nav>
     </header>
     <script>
@@ -240,7 +240,7 @@
         <div class="sort-tabs" id="sortTabs" role="tablist">
             <button class="sort-tab" data-sort="new" onclick="setSort('new')">✨ New</button>
             <button class="sort-tab active" data-sort="popular" onclick="setSort('popular')">🔥 Popular</button>
-            <button class="sort-tab" data-sort="rankings" onclick="setSort('rankings')">🏆 Rankings</button>
+            <button class="sort-tab" data-sort="rankings" onclick="setSort('rankings')">🏆 Ratings</button>
         </div>
         <h2 id="sectionTitle" style="margin-bottom: 1.5rem;">Popular Dramas</h2>
         <div class="drama-grid" id="dramaGrid"></div>
@@ -266,7 +266,7 @@
             </details>
             <details class="faq-item">
                 <summary>What can I watch on DramaStream?</summary>
-                <p class="faq-a">Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire &amp; CEO, revenge, werewolf, contract marriage, divorce &amp; exes and more. Use the Popular and Rankings tabs to see the highest-rated titles, or New for the latest additions.</p>
+                <p class="faq-a">Over 25,000 English short dramas from platforms like DramaBox and FlickReels, spanning romance, billionaire &amp; CEO, revenge, werewolf, contract marriage, divorce &amp; exes and more. Use the Popular and Ratings tabs to see the highest-rated titles, or New for the latest additions.</p>
             </details>
             <details class="faq-item">
                 <summary>How often are new dramas added?</summary>
@@ -291,10 +291,10 @@
         // counter worker, see VIEWS_API below); with no counts yet it falls back
         // to highest-rated-first so the tab is never worse than before. Unrated
         // titles and uncounted slugs sink, ties keep catalog order (stable sort).
-        // New = catalog order as scraped. Rankings = rating sort (unrated counts
-        // as 0), and each poster shows its rating out of 5 (unrated shows 0)
-        // instead of the old #rank badge.
-        const SORT_LABELS = { popular: 'Popular Dramas', new: 'Latest Releases', rankings: 'Top Rankings' };
+        // New = catalog order as scraped. Ratings = rating sort (unrated counts
+        // as 0), and each poster shows its rating on the raw 0-10 scale
+        // (unrated shows 0) instead of the old #rank badge.
+        const SORT_LABELS = { popular: 'Popular Dramas', new: 'Latest Releases', rankings: 'Top Ratings' };
         const byRating = (a, b) => (b.rating || 0) - (a.rating || 0);
 
         // ---- view counts (Popular tab) ----
@@ -451,10 +451,10 @@
                 card.className = 'drama-card';
                 card.href = `watch.html?slug=${drama.slug}`;
 
-                // Rankings badge: the title's rating out of 5 (records store
-                // 0-10, so /2 for display); titles without a rating show 0.
+                // Ratings badge: the title's rating on the raw 0-10 scale
+                // (10 highest); titles without a rating show 0.
                 const rankHtml = currentSort === 'rankings'
-                    ? `<span class="rank-badge">${drama.rating ? (drama.rating / 2).toFixed(1) : '0'}</span>`
+                    ? `<span class="rank-badge">${drama.rating ? drama.rating.toFixed(1) : '0'}</span>`
                     : '';
                 const genreHtml = genreNames(drama).slice(0, 2).map(g => `<span class="genre-tag" data-g="${g}" onclick="event.preventDefault(); event.stopPropagation(); setGenre(this.dataset.g)">${g}</span>`).join('');
                 card.innerHTML = `
@@ -566,7 +566,7 @@
                 currentSort = wantedSort;
                 document.querySelectorAll('#sortTabs .sort-tab').forEach(b => b.classList.toggle('active', b.dataset.sort === wantedSort));
             }
-            // Highlight the active New/Rankings nav link
+            // Highlight the active New/Ratings nav link
             document.querySelectorAll('#mainNav .nav-link').forEach(a => {
                 const s = a.search ? new URLSearchParams(a.search).get('sort') : null;
                 a.classList.toggle('active', !!s && s === currentSort);
