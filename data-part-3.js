@@ -1,6 +1,552 @@
 window.DB_DRAMAS_P3=window.DB_DRAMAS_P3||[];
 window.DB_DRAMAS_P3.push(
 {
+ "id": "the-devil-ceo-s-contract-wife",
+ "title": "The Devil CEO's Contract Wife",
+ "slug": "the-devil-ceo-s-contract-wife",
+ "platform": "suikora",
+ "episodes": 40,
+ "cover": "https://suikora.com/img/posters/371cc3c0b0782ad3-480.webp",
+ "description": "Catherine, Ares King's assistant of three years, accepts a contract marriage deal to rescue her struggling family farm. For one year as his wife, she'll receive a fortune—but the arrangement comes with a strict condition: no romantic feelings allowed. When the charade begins to blur the lines between performance and reality, Catherine uncovers a devastating secret that connects Ares's empire to her parents' fate.",
+ "about": "",
+ "genres": [
+  "Romance",
+  "Revenge",
+  "CEO & Billionaire"
+ ],
+ "rating": null,
+ "releaseDate": "2026-11-20T14:31:16.137Z",
+ "dubbed": false,
+ "source": "suikora",
+ "urls": [
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a571d6a95001834821442110503/v.f1956775.mp4?t=6b005e69&us=29d43&sign=7a51e94a3e8dfdc38bf120d79df98d40",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/0df7436d5001834821440231523/v.f1956775.mp4?t=6b005e6a&us=7cb0b&sign=c9d02c6fb8869c04ee650fde0bdae210",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/61cdeaba5001834821441513757/v.f1956775.mp4?t=6b005e6a&us=9df1c&sign=5bc3e822905703a7b87771f9c7a4aeb3",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/643755205001834821441627577/v.f1956775.mp4?t=6b005e6b&us=a0287&sign=900020d1fe1b2810abcf43cfd6660f8e",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/690657025001834821441848277/v.f1956775.mp4?t=6b005e6b&us=c1a97&sign=907a1e305a3986c1a3c65533df8238f0",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a38c085b5001834821442075772/v.f1956775.mp4?t=6b005e6c&us=c03c3&sign=0888d0583091002d576eac7afc3a06b8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/569147c05001834821441074977/v.f1956775.mp4?t=6b005e6c&us=5309b&sign=a429b321a45f72817d66e9bccf9fac1d",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/589f1e965001834821441136770/v.f1956775.mp4?t=6b005e6d&us=4a8b8&sign=dd4f62d0515d9020e8ddc75448932f92",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5d249cce5001834821441315241/v.f1956775.mp4?t=6b005e6d&us=f74e4&sign=6f51fee4c718bd97d1bc6201c9c951e8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/0b7e61a95001834821440112080/v.f1956775.mp4?t=6b005e6e&us=eb7a7&sign=2ac988cd66610f339bbdd14b4800cb92",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a38e38fc5001834821442079706/v.f1956775.mp4?t=6b005e71&us=6f9d0&sign=b0548694b74d96bc405136f6c803f1c1",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5fe89ae35001834821441479638/v.f1956775.mp4?t=6b005e72&us=46572&sign=06b65bb5c1ebf907cb931bff388b5ebe",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a231f35001834821440432913/v.f1956775.mp4?t=6b005e73&us=bbc5a&sign=aac0be3742c1bdc64f7f34c399b7f401",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a2986c5001834821440433041/v.f1956775.mp4?t=6b005e73&us=13e41&sign=e0a14b224cb7f3dbcafaf120195238c0",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/1e5e89805001834821440943397/v.f1956775.mp4?t=6b005e74&us=c106a&sign=e8c9c8740874076c7e217bf2d4a8edc8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a18c0e5001834821440431315/v.f1956775.mp4?t=6b005e74&us=95671&sign=2188179387c0d8f5c01a9d1ee8012ecd",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5626dd975001834821441018763/v.f1956775.mp4?t=6b005e75&us=0276a&sign=dc4d860207ff6981f28b5e104b62ea21",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a57274d25001834821442111961/v.f1956775.mp4?t=6b005e75&us=4090e&sign=191d340d4d754258ae0fc10318d2d782",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a7f0203d5001834821442239547/v.f1956775.mp4?t=6b005e77&us=40354&sign=56b4bf22a2cd532bd98209f561fb7c05",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a57274b95001834821442111959/v.f1956775.mp4?t=6b005e78&us=22351&sign=143b744945b815960615de9edae2a49b",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/b4ba61875001834821490653797/v.f1956775.mp4?t=6b005e78&us=0c95e&sign=9068fb331381f0a0e658c546d156b121",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5ff7ed5e5001834821441484466/v.f1956775.mp4?t=6b005e79&us=8fed4&sign=04e4376ab4968709e1fc7aef702e077c",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/b9885ba65001834821490872892/v.f1956775.mp4?t=6b005e7a&us=8405d&sign=a2c3c0a09f4b9f82f65c18fdb4c1c2c2",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a7fddebd5001834821442241788/v.f1956775.mp4?t=6b005e7a&us=26613&sign=5b3dec3ca055990c71e1b38c7299a02f",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/b98731be5001834821490870481/v.f1956775.mp4?t=6b005e7b&us=1a4e0&sign=81f62c0a5b86384e3bf9591b325e9eed",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/aa7af0325001834821442368002/v.f1956775.mp4?t=6b005e7b&us=3afcf&sign=7d5e70a345b6c9d0ee6367f7fdf3767f",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/1e5e00335001834821440942403/v.f1956775.mp4?t=6b005e7c&us=0b547&sign=50d720782f08a2548d2e6c404c66b68b",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a20c915001834821440432083/v.f1956775.mp4?t=6b005e7c&us=5f48e&sign=7a3b5f59365223ec3f1f68b747b1b8b6",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a2a94e5001834821440433430/v.f1956775.mp4?t=6b005e7f&us=3dc91&sign=f0adbae307ff0704bef6b07ac3c80bb5",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5d21f4365001834821441310749/v.f1956775.mp4?t=6b005e81&us=28359&sign=33a4735964ed17b5b2b82a6b9833c6a8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/5ff6e95e5001834821441482927/v.f1956775.mp4?t=6b005e82&us=6a026&sign=949a5aa6ba33735f2c0adf730dec9084",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/b4a95d055001834821490645659/v.f1956775.mp4?t=6b005e82&us=936bd&sign=6d44f1b2f4c784f4458a50ee6c70d3c8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/a38e1b545001834821442079014/v.f1956775.mp4?t=6b005e83&us=d102d&sign=4f1fac2afcbeb10ee3dee97a90e6607a",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/643879df5001834821441629817/v.f1956775.mp4?t=6b005e85&us=f5e04&sign=53ce05db36cc621591f5ebaf5ce79c29",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/58c095945001834821441151843/v.f1956775.mp4?t=6b005e85&us=6f17f&sign=3d5485119d86cd506df146d4b2dfde7d",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/aa8af15c5001834821442374654/v.f1956775.mp4?t=6b005e86&us=f9ff1&sign=b894bd70371c3ea876cbc1eed0f98cc6",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/669e0a1f5001834821441736593/v.f1956775.mp4?t=6b005e86&us=8291c&sign=21fa16e2f2e74ae5992e1669cb5e780e",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/1e4f36595001834821440938512/v.f1956775.mp4?t=6b005e87&us=abfe2&sign=7c81fd8c29b0089f6a246bcb2dbc40e4",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a3b0f05001834821440435025/v.f1956775.mp4?t=6b005e87&us=eb16b&sign=5c108801101d9d09174e7873be8ea6b8",
+  "https://play.webnovel.com/f7837f06vodtransuse1500027893/12a3b4ef5001834821440435105/v.f1956775.mp4?t=6b005e88&us=f133d&sign=68c2049692299b0dfc03292144175f00"
+ ],
+ "subtitles": [
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
+ ],
+ "servers": [
+  [
+   {
+    "id": 292708,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "vqzxZK4iC2ydj4x8",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292709,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "d6zb1AnsrTmHMSlg",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292710,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "exYxAx0uIuXVkn3v",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292711,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "M9SPYPY6RKXlput7",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292712,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "4cYGhkrYKElbMO1e",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292713,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "GhqYRNYrepmLPUu4",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292714,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "cw71J9xAAOVpA0hy",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292715,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "oAQEWv6Eq8y-Jw_6",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292716,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "OTaWbJKE6miPi6hL",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292717,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "hK1yTS7nhr0jOrwJ",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292718,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "1-p7WJeDFkqw-H8K",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292719,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "3GZ1I_Ot-3gr3Fpn",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292720,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "wztqAETz_7fAXL0g",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292721,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "vuFphXJqdFNKEtp_",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292722,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "BAJSrvC1EY4P8lSZ",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292723,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "ew6pcZJuMA-q9PQ4",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292724,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "9zH607rh8V4aa-QK",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292725,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "XqLSsYQ3bAjHhcMy",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292726,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "2oJT8DS3tioknP-l",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292727,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "lhqyNqhZmkhUiKWP",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292728,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "Ec2wEh_lESytU5YW",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292729,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "QQZp-pHxpNnxtFnO",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292730,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "j56KgjZvlJREEyoY",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292731,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "CiP6twFHKVJwDOxX",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292732,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "1F-uovXVEugE1stJ",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292733,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "cKYo-vXqd34BtneO",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292734,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "arLAlIHgJDRoa8cb",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292735,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "hDKM3QDfU5gpz4X0",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292736,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "_pxFW-h0L2kRbmnD",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292737,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "VmMq5p_ISeCsPYdK",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292738,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "mmxoonuvNxMAOFh9",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292739,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "aYdRFfX4vePpoMyi",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292740,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "sdmGuVpiAChCdaHY",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292741,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "Ac4fOpaAO-1MBUgl",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292742,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "luaPpO0so6czDQr3",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292743,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "dKyt2zGmKSU5ndyv",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292744,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "yuDIoYVFo-v21l0U",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292745,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "HUfNL29SukROQI80",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292746,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "T4teqNte8EhiT7pJ",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ],
+  [
+   {
+    "id": 292747,
+    "name": "Suikora S2",
+    "type": "mp4",
+    "url": "",
+    "hash": "Cjhd0hFaK4KHQ62h",
+    "subtitleUrl": null,
+    "subtitleLang": null
+   }
+  ]
+ ],
+ "dateAdded": "2026-11-20T14:38:56Z"
+},
+{
  "id": 989632744719,
  "title": "My Fake Girlfriend Stole Me From My Crush",
  "slug": "my-fake-girlfriend-stole-me-from-my-crush",
