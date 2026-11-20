@@ -760,23 +760,6 @@ window.DB_DRAMAS_P3.push(
  "dateAdded": "2026-11-18T09:25:36Z"
 },
 {
- "id": 989632744719,
- "title": "My Fake Girlfriend Stole Me From My Crush",
- "slug": "my-fake-girlfriend-stole-me-from-my-crush",
- "platform": "dramabox",
- "episodes": 30,
- "cover": "https://watchdramareels.com/k/989632744719-720.webp",
- "description": "Every episode of My Fake Girlfriend Stole Me From My Crush, a drama reel spanning 30 episodes from DramaBox, is free to watch. The full series is available to watch. No coins, nothing to unlock or install: each short episode opens right in your browser.",
- "about": "",
- "genres": [],
- "rating": null,
- "releaseDate": "",
- "dubbed": false,
- "source": "dramadunyam",
- "urls": [],
- "dateAdded": "2026-11-18T09:25:36Z"
-},
-{
  "id": 989559040425,
  "title": "I Married My Bestie's Son for Revenge",
  "slug": "i-married-my-besties-son-for-revenge",
