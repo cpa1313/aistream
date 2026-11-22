@@ -1,0 +1,139 @@
+# =============================================================================
+#  Video health check + link rescue for fulldrama.stream
+# =============================================================================
+#  Runs every hour and verifies that each video listed in videos.json is
+#  actually playable, exactly the way a browser would play it:
+#
+#    1. PAGE     /watch?slug=... returns 200 with the player markup
+#    2. SOURCES  rebuilds the site's resolveSources() chain
+#                (data-part-1..3.js -> urls / eps/chunk-*.js / chunk-dun*.js,
+#                plus the /dun/<id>/<ep> fresh-link resolver as last mirror)
+#    3. PLAYBACK fetches the .m3u8 playlist, follows the first variant of a
+#                master playlist, then downloads the first 128 KB of the first
+#                segment (HTTP 200/206 and non-empty = playable)
+#    4. PROXY    checks the Cloudflare worker:
+#                - alive:  worker root answers 400 "missing or invalid ?u="
+#                - relay:  /?u=<url> relays allowlisted hosts
+#                - dun:    /dun/<id>/<ep>?slug=... fresh-link resolver
+#                (the worker is NOT a site mirror - it answers 400 on /watch
+#                paths - so "proxy OK" means worker + relay + resolver, not
+#                "site reachable through the proxy")
+#
+#  WHEN A VIDEO IS BROKEN - automatic rescue:
+#    scripts/rescue_videos.py scrapes https://watchdramareels.com (the same
+#    /api/play/{id}/{ep} endpoint its player uses, incl. the sha256
+#    proof-of-work "bilet" ticket), VERIFIES every fresh link end-to-end
+#    (playlist + first segment), then patches ONLY the affected record's link
+#    array inside new-videos.json (byte-precise, style-preserving) and commits
+#    it straight to the default branch.
+#
+#    Run colour:
+#      - green  = all videos healthy, OR every broken video was rescued
+#                 (fresh verified link committed to new-videos.json)
+#      - red    = a video is broken AND rescue could not verify a fresh link
+#                 for it (or the proxy worker is down)
+#
+#    NOTE: watchdramareels signs links per request and its player treats them
+#    as stale after ~2 minutes, so a rescued link is the freshest possible
+#    snapshot - your pipeline should consume the committed new-videos.json
+#    promptly. Also note watchdramareels limits ticket issuance per IP, so the
+#    rescue solves the PoW at most once per run, reuses the cached cookie from
+#    the previous run (Actions cache, kept outside the uploaded artifacts), and
+#    only re-solves the PoW when the site answers 412.
+#
+#  Adding more videos later: just append slugs to videos.json in the repo root:
+#      { "videos": [ { "slug": "leave-with-a-broken-heart", "episode": 1 },
+#                    { "slug": "another-drama", "episode": 1 } ] }
+#
+#  Notes on scheduling:
+#    - GitHub cron is ALWAYS UTC; '0 * * * *' = top of every hour.
+#    - Scheduled workflows only run from the default branch, may start a few
+#      minutes late at peak times, and get disabled automatically after 60
+#      days of no repo activity (re-push or re-enable in the Actions tab).
+# =============================================================================
+
+name: Video health check
+
+on:
+  schedule:
+    - cron: '0 * * * *'          # hourly, UTC
+  workflow_dispatch: {}          # manual "Run workflow" button
+
+permissions:
+  contents: write                # the rescue step commits new-videos.json
+
+concurrency:
+  group: video-health-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run video health check
+        id: check
+        continue-on-error: true   # job colour is decided by the rescue step
+        env:
+          SITE_BASE_URL: https://fulldrama.stream
+          PROXY_BASE_URL: https://proxy2.webmasterjamezzz13.workers.dev
+        run: |
+          python scripts/check_videos.py \
+            --videos videos.json \
+            --results health-results/results.json
+
+      - name: Restore ticket cookie from the previous run
+        if: failure() && steps.check.outcome == 'failure'
+        uses: actions/cache/restore@v4
+        with:
+          path: .wdr-ticket/cookies.txt
+          key: wdr-ticket-${{ github.run_id }}
+          restore-keys: |
+            wdr-ticket-
+
+      - name: Rescue broken videos (scrape fresh links from watchdramareels)
+        id: rescue
+        if: failure()             # only when the check above found problems
+        run: |
+          python scripts/rescue_videos.py \
+            --results health-results/results.json \
+            --catalog new-videos.json \
+            --report health-results/rescue.json \
+            --cookie-file .wdr-ticket/cookies.txt
+
+      - name: Save ticket cookie for the next run
+        if: failure() && steps.rescue.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: .wdr-ticket/cookies.txt
+          key: wdr-ticket-${{ github.run_id }}
+
+      - name: Commit rescued links
+        if: failure() && steps.rescue.outcome == 'success'
+        run: |
+          if git diff --quiet -- new-videos.json; then
+            echo "no catalog changes to commit"
+            exit 0
+          fi
+          git config user.name  "video-rescue-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          SLUGS=$(python -c "import json;print(', '.join(v['slug'] for v in json.load(open('health-results/rescue.json'))['videos']))")
+          git add new-videos.json
+          git commit -m "chore(rescue): fresh video links for ${SLUGS} [skip ci]"
+          git push
+
+      - name: Upload check + rescue details
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-health-details
+          path: health-results/
+          retention-days: 7
