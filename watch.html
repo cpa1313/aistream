@@ -762,7 +762,7 @@
                         if (!SEGMENT_PROXY_BASE && SEGMENT_PROXY_HOSTS.includes(failHost)) {
                             showMsg('❌ Error: this title\'s video CDN blocks playback from hosted sites. Fix: deploy segment-proxy-worker.js (see README), then set SEGMENT_PROXY_BASE in this file.', '#ff4444');
                         } else if (candidates[activeMirror] && candidates[activeMirror].includes('/dun/')) {
-                            showMsg('❌ Fresh-link resolver could not fetch a new link from dramadunyam (it may be blocking server requests right now). Try again later — or re-scrape this title and update new-videos.json.', '#ff4444');
+                            showMsg('❌ Fresh-link resolver could not fetch a new link from the server (currently optimizing the video right now). Please come back later!', '#ff4444');
                         } else {
                             showMsg('❌ Error: Video failed to load (' + (data.details || 'network error') + '). Try another episode or come back later.', '#ff4444');
                         }
