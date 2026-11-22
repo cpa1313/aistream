@@ -379,6 +379,27 @@
 
         async function resolveSources(drama) {
             let base = null;
+            // v5.5.3 — baked-dun links (eps/chunk-dun*.js, fresh from
+            // refresh_eps_from_home.mjs) outrank everything else for dun
+            // records: their stored `urls` are signed and expire within days,
+            // and epsChunk files hold the same dead links. Only when nothing
+            // is baked do we fall through to the original chain below.
+            if (drama.source === 'dramadunyam') {
+                try {
+                    await loadChunkScript('dun');
+                    const no = window.DB_EPS_DUN_INDEX && window.DB_EPS_DUN_INDEX[drama.slug];
+                    if (no) { try { await loadChunkScript('dun-' + no); } catch (e) { /* index pointed here; ignore */ } }
+                } catch (e) { /* no baked dun chunks uploaded yet */ }
+                const recDun = window.DB_EPS[drama.slug];
+                if (Array.isArray(recDun) && recDun.length) base = Array.isArray(recDun[0]) ? recDun : [recDun];
+                else if (recDun && recDun.mirrors && recDun.mirrors.length) base = recDun.mirrors;
+                if (base) {
+                    currentDrama = drama;               // dunResolverMirror reads id/source off it
+                    const resolver = dunResolverMirror(drama.episodes || base[0].length || 0);
+                    if (resolver) base.push(resolver);  // fresh-link fallback for eps beyond the bake
+                    return base;
+                }
+            }
             if (drama.urls && drama.urls.length) {
                 base = [drama.urls];
             } else if (drama.epsChunk) {
