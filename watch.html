@@ -248,7 +248,7 @@
                 <!-- 2. Video Player -->
                 <div class="video-wrapper">
                     <div class="loading" id="loadingText">Loading video...</div>
-                    <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
+                    <video id="videoPlayer" controls playsinline></video>
                 </div>
 
                 <!-- 3. Episode Section -->
@@ -675,6 +675,10 @@
             // candidate: on error, advance to the next mirror exactly like
             // the hls.js path does.
             const video = document.getElementById('videoPlayer');
+            // v5.5.4 — never let a lingering crossorigin attribute force CORS
+            // mode on native loads; DramaBox/CloudFront sends no ACAO and the
+            // browser then blocks valid links with status 0 / error code 4.
+            video.removeAttribute('crossorigin');
             video.addEventListener('error', () => {
                 if (activeMirror + 1 < candidates.length) {
                     activeMirror++;
