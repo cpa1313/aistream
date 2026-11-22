@@ -325,7 +325,10 @@
            (a bare worker URL without the ?u= also works — it is added automatically)
            ============================================ */
         const SEGMENT_PROXY_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/?u=';
-        const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net', 'v.73920582.xyz', 'v.73920583.xyz'];
+        // v5.5.1 — the *short.com family randomly 403s ~50-70% of direct
+        // requests (fatal for hls.js). Routing them through proxy2 /?u= lets
+        // the worker retry server-side (8 attempts) and rewrite playlists.
+        const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net', 'v.73920582.xyz', 'v.73920583.xyz', 'static.livoshort.com', 'static.miraluneshort.com', 'static.miralunedrama.com', 'static.cinerrashort.com', 'static.rivoshort.com', 'static.versevoyagetv.com'];
         // Fresh-link resolver (worker v3): for dramadunyam-sourced titles whose
         // stored links carry short-lived signatures (gorogoro auth_keys die
         // ~2h after scrape), watch.html adds WORKER/dun/{id}/{ep} as the LAST
