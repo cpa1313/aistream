@@ -386,6 +386,20 @@
                 // stays uniform; tolerate nested arrays just in case.
                 if (Array.isArray(rec) && rec.length) base = Array.isArray(rec[0]) ? rec : [rec];
                 else if (rec && rec.mirrors && rec.mirrors.length) base = rec.mirrors;
+            } else if (drama.source === 'dramadunyam') {
+                // Baked dun links (eps/chunk-dun*.js) from refresh_eps_from_home.mjs.
+                // chunk-dun.js is a small slug→chunk index; the link arrays live
+                // in chunk-dun-<no>.js and Object.assign into the same
+                // window.DB_EPS the epsChunk path reads. Missing files reject —
+                // tolerated, the /dun resolver fallback below still applies.
+                try {
+                    await loadChunkScript('dun');
+                    const no = window.DB_EPS_DUN_INDEX && window.DB_EPS_DUN_INDEX[drama.slug];
+                    if (no) { try { await loadChunkScript('dun-' + no); } catch (e) { /* index pointed here; ignore */ } }
+                } catch (e) { /* no baked dun chunks uploaded yet */ }
+                const recDun = window.DB_EPS[drama.slug];
+                if (Array.isArray(recDun) && recDun.length) base = Array.isArray(recDun[0]) ? recDun : [recDun];
+                else if (recDun && recDun.mirrors && recDun.mirrors.length) base = recDun.mirrors;
             }
 
             currentDrama = drama; // dunResolverMirror reads id/source off it
@@ -475,7 +489,7 @@
                 "numberOfEpisodes": drama.episodes,
                 "url": canonicalUrl,
                 "image": drama.cover,
-                "aggregateRating": drama.rating ? {
+                "aggregateRating": drama.rating > 0 ? {
                     "@type": "AggregateRating",
                     "ratingValue": drama.rating.toString(),
                     "bestRating": "10"
@@ -531,7 +545,7 @@
 
             const metaInfo = document.getElementById('metaInfo');
             const metaParts = [];
-            if (drama.rating) metaParts.push(`<span><strong>Rating:</strong> ${drama.rating}/10</span>`);
+            if (drama.rating > 0) metaParts.push(`<span><strong>Rating:</strong> ${drama.rating}/10</span>`);
             if (drama.releaseDate) metaParts.push(`<span><strong>Released:</strong> ${drama.releaseDate}</span>`);
             metaParts.push(`<span><strong>${drama.episodes} Episodes</strong></span>`);
             metaInfo.innerHTML = metaParts.join('');
