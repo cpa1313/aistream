@@ -42203,15 +42203,128 @@ window.DB_DRAMAS_P3.push(
  "slug": "forced-to-be-helen-of-troy",
  "platform": "dramawave",
  "episodes": 55,
- "cover": "https://watchdramareels.com/k/492601-720.webp",
+ "cover": "https://dramaflix.net/dfl-media/img/covers/77ef9bfa4d006112/480.webp",
  "description": "Tricked by her beautiful twin Helen into marrying King Menelaus, Phoebe suffers his hatred for her sister's betrayal. But as they fall in love and she becomes a loving mother to his daughter Hermione, Helen kidnaps the child and flees to Troy with Paris, sparking a legendary war.",
  "about": "",
- "genres": [],
+ "genres": [
+  {
+   "slug": "drama",
+   "name": "Drama"
+  },
+  {
+   "slug": "forced-love",
+   "name": "Forced Love"
+  },
+  {
+   "slug": "historical",
+   "name": "Historical"
+  },
+  {
+   "slug": "kidnap",
+   "name": "Kidnap"
+  },
+  {
+   "slug": "king",
+   "name": "King"
+  },
+  {
+   "slug": "kingdom",
+   "name": "Kingdom"
+  },
+  {
+   "slug": "marriage",
+   "name": "Marriage"
+  },
+  {
+   "slug": "mistaken-identity",
+   "name": "Mistaken Identity"
+  },
+  {
+   "slug": "mythology",
+   "name": "Mythology"
+  },
+  {
+   "slug": "romance",
+   "name": "Romance"
+  },
+  {
+   "slug": "royalty",
+   "name": "Royalty"
+  },
+  {
+   "slug": "strong-heroine",
+   "name": "Strong Heroine"
+  },
+  {
+   "slug": "tragedy",
+   "name": "Tragedy"
+  },
+  {
+   "slug": "twins",
+   "name": "Twins"
+  }
+ ],
  "rating": null,
  "releaseDate": "",
  "dubbed": false,
  "source": "dramadunyam",
- "urls": [],
+ "urls": [
+  "https://video-v7.mydramawave.com/vt/0f7c8eec-cb13-4b45-b609-94bd76edf8f3/h264-3c89fd03-5718-40b4-ad02-8bdf42a8707f.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/925e137e-6102-478c-ac3c-6f956e3247eb/h264-603b0050-899d-4a4b-9c6a-ce3c510407fc.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/65f164b5-d94f-4eec-aa2c-423d3ac9a256/h264-29ee7fa6-07f1-4907-865d-a719c02536cd.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/cc43ffbd-9a08-4f40-bdae-36eb790aa115/h264-ab09da95-3711-434a-8191-e4ddcf2b5066.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/698253c1-ed7d-463a-aeb2-0cd9d8ab53c1/h264-e77e89fb-610f-49c8-bf2c-d334f293c1c5.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/66be3e90-5eb7-446f-b414-cf474f70082e/h264-28416dce-dda8-4222-9b91-d0fe755a4619.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/8ca6a16c-bb82-46bd-9079-33265f6bd53e/h264-26ed6cab-7485-409b-846e-b0241133de7d.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/c9cb3538-a47e-49c0-b40d-404e67dac572/h264-83aa5825-4c97-4c5b-998d-f05c0b339749.m3u8",
+  "https://dramadunyam.com/vr/fe/vt/87a208d8-82e2-4b8a-9436-89c3715dfc80/h264-f37fb66a-d2ae-4ed0-a08c-2ae4dec1603a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/c80ac49b-46a1-4d85-afb6-b42e1af33ad3/h264-6016b688-d6d6-4751-a38d-396a3b7bec80.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/02c1c84f-0bff-409a-a201-bf26c7c282ef/h264-84bd1af2-8d37-4aec-baf0-9bc50eb89bde.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/77974d82-a93c-42d4-a6f5-23c29e724fe5/h264-774353fc-7117-496e-9d6e-40f41fa0eb91.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b9680e98-d607-4f77-99ea-e31fb1874a0a/h264-eb6cedf0-551d-4d08-b352-fa4afb0ac818.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/357f6910-324b-4221-a4f1-65353bbed4e1/h264-a3057702-3b0b-48a8-b37c-9d968b8504a5.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/e0fd1397-8133-447e-84c5-db12fe141546/h264-67e02fe7-8bf1-44bd-999e-30d8772e3ef1.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/be8da0dd-eeca-469a-a53e-92587f4e8d7f/h264-d26bd280-e546-4ae5-85eb-56dd7edcc4f6.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d7685f70-ab58-4b77-bee0-2e1994885e1b/h264-17947c8d-47a2-4a96-8eae-8fad35011a7f.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/27d1fb8d-76cd-47f0-aa4e-21349ee6b402/h264-1c10944c-fe55-4d8b-b879-84a67b29ce1f.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/008e7692-9ae9-4050-9cfe-44c9736686c4/h264-4c8b3631-055b-45b5-9eb2-55bf086be817.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a0bde1b0-3c5f-48d7-9208-f491f489f4d2/h264-8d8a0821-d8a7-47d0-89bd-8bca32b5e185.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/477d9983-f9b5-4478-b378-526f37bfa401/h264-d4406791-8b20-4f09-bf65-6a1f6bd20e44.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/6ca96da7-de5e-48f9-a763-40d6656d9e3a/h264-f64ce031-70f0-4184-a6c5-6de322778be6.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/99493781-4b1d-48c2-91a9-b53c13cd92e0/h264-0a018c18-d79a-4f95-942d-6dd3ae93065e.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/654d6e71-d922-4499-bf14-1ea9c6747425/h264-2eb50f34-1563-4607-bb5c-451322b26aff.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/ea1e855f-e203-468b-9090-6c3bebc04b95/h264-34059cd7-7506-499c-817f-479736fc7062.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/0e172800-4417-4e43-af31-b64f57c028d1/h264-9e1364ba-8a11-49ba-992a-9b9f8f4807bf.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/757f59a0-13cc-4052-8aea-16eb24674384/h264-070f6592-50e7-498c-89ff-8f9ea65913d4.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d5f350c7-e56a-42fb-81a3-dc23811536d1/h264-418abc8a-7dcd-4d4a-9612-b41c05012656.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d4694dbf-ad9a-401c-9a8b-0bea19dd0cde/h264-78411938-ddfc-4f06-8360-63ec7f533bf0.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/639d4d7e-c2f8-422f-aacf-dc3ecaf15c68/h264-96d2c5b2-f4d8-4b73-8fa4-82e983c343a7.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/067cd6e8-0b6f-4563-a95f-d414ede889fd/h264-26977090-7b14-4fcb-b84e-6b721f387e78.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/bb0ba0d2-1ec3-4743-b5c6-958e1dfbb424/h264-5b4c43dd-bbad-4c50-b5f9-e66f4db8ad2c.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a084f9a0-86d9-41f0-b55b-c7f5c88da7b8/h264-7583ad2f-606d-4c46-8f7f-c23af5695526.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b91cbc31-e49f-4f83-9578-6bcd586efca3/h264-011c8ab7-03cf-442e-ad77-7f5dcb43b93c.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/2a62d02f-fd19-4d3d-bb26-f3540b528473/h264-08ea46d8-cc20-4764-9644-1e3a42129e2a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/4f5d9960-9914-429a-90dd-514b31ff7a4a/h264-1f37639f-8a77-4970-b97e-cb918bb4060a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a44884dc-9028-4f9d-836a-063155cc960c/h264-3c05f973-b24a-4885-b83d-22cf29a2c293.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/9f9af23f-84d2-407d-897d-5ce83fd4a255/h264-c5c0e3cb-c8c2-4128-b97c-6ebfcd475005.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/37c4e178-2803-4182-b501-cb194ca8b9e0/h264-81975b18-f079-47b6-8cff-6fe80c72acff.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/b40d072d-8541-493e-8db7-5b37679c13ce/h264-305043fc-aad0-46af-82be-19c87178bc5a.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/6f59d236-c2d9-40e3-aa4c-7354b2d7cc63/h264-79253a82-0eb9-42bb-ab45-0a933f6f78eb.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/450afb6c-335e-414b-8f8e-30dc00c5f8b6/h264-3a6b0a78-fece-4385-bf7f-5c7f7352993b.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/8baf12f2-714f-48ea-a324-4dc2546aa1d4/h264-c532f910-4cdc-4769-8dd9-a8d636df6f7d.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/fa7e5bb4-7a63-4080-88c6-2ca51272d14b/h264-40773fa6-63da-4535-af86-8a2530a69442.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/615223a4-db0b-4568-bd5d-4f83e73e0a94/h264-bc405cca-4662-4e8b-81db-f8123f892275.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a32d588d-f931-4905-8f0d-953eaf7e841a/h264-99056e46-dee2-4193-a193-02a0705fcf82.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a5e1fe5c-7f6d-4a9e-aa7f-012d6ebe0285/h264-d430cf13-764f-4b5c-80ad-150df546a7ef.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/d24f45cd-38e0-4e5a-9536-668d71bfc8c1/h264-a8ec63c3-2d39-46a4-9ebf-b59fcc945c25.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/014466d5-f47f-4d83-8423-e72c5a52e056/h264-4ae9984d-12ce-4b89-a439-0dbf8cb74b1c.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/25988165-65a9-4aed-a2f7-7982924f12aa/h264-65acb25e-eaad-466e-80ed-1d91b2f63bd8.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/a54e9546-4b7c-4a9a-bedc-2f9c7e29f981/h264-44087ba3-3bbe-4336-9eb9-ae83297f2574.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/e4e24a81-38cb-4f31-8dda-a98478c95297/h264-1012973c-103b-4324-b1af-479febd36e3b.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/cd557c86-a3ac-4f04-bf81-a25b3abf2205/h264-d83da272-49dd-4184-b389-216d027c4b84.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/c045e8e9-c32a-4769-863a-ee708aa50d03/h264-dc35213a-883c-45ce-8e1b-0a4826f88056.m3u8",
+  "https://dramadunyam.com/vr/fr/vt/11e57ff0-6824-445a-a27c-58fac07b82e5/h264-11117d0c-b978-4cc2-9c5f-b92e4d1715ef.m3u8"
+ ],
  "dateAdded": "2026-11-18T09:25:36Z"
 },
 {
