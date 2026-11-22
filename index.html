@@ -321,15 +321,25 @@
         let viewsPromise = null;
         function loadViews() {
             if (!VIEWS_API || viewsPromise) return viewsPromise || Promise.resolve({});
-            viewsPromise = fetch(VIEWS_API + '/views')
-                .then(r => r.ok ? r.json() : {})
-                .then(m => {
-                    viewCounts = (m && typeof m === 'object') ? m : {};
-                    // Ratings uses the counts too (tie-breaks + views chip):
-                    if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
-                    return viewCounts;
-                })
-                .catch(() => { viewsPromise = null; return {}; });
+            // Live counts from the counter worker. If it cannot answer (quota,
+            // deploy hiccup, outage), fall back to the static views.json
+            // snapshot committed with the repo, so Popular still orders by
+            // views and the Popular/New/Ratings cards keep their views chip.
+            // Live values win over the snapshot for every slug it has.
+            const seedP = fetch('views.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+            viewsPromise = Promise.all([
+                fetch(VIEWS_API + '/views').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                seedP
+            ]).then(([live, seed]) => {
+                // a usable map is an object of slug->count; the worker's error
+                // shape ({ok:false,...}) must never be mistaken for one
+                const usable = m => m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
+                viewCounts = usable(live) ? Object.assign({}, usable(seed) ? seed : {}, live)
+                          : (usable(seed) ? seed : {});
+                // Ratings uses the counts too (tie-breaks + views chip):
+                if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
+                return viewCounts;
+            });
             return viewsPromise;
         }
         const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
