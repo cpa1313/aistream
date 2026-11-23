@@ -15,7 +15,11 @@
  *     expiring later can never block future builds.
  *
  * Reachability = HTTP 2xx on a ranged GET (1 byte) with a browser User-Agent and
- * no Referer — the same conditions under which the site plays videos locally.
+ * the per-host Referer from REFERER_HOSTS below — the same conditions under
+ * which the site actually plays these hosts: no-Referer hosts are probed bare,
+ * hotlink-gated hosts are probed with the Referer the proxy worker sends
+ * upstream server-side (verified 2026-11-22: v.73920583.xyz serves 403 bare
+ * and 200 with the dramadog.app Referer — same URL, nothing else changed).
  * Network errors / 502-504 are retried once.
  *
  * Exit policy:
@@ -128,12 +132,39 @@ if (toProbe.length === 0) {
 // --- probing ---
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
+// v5.7.1 — hosts behind hotlink protection that REQUIRE a specific Referer.
+// The site plays these through the proxy worker, which sends the Referer
+// upstream server-side; a bare request 403s even though the URL is alive
+// (all 12,460 v.73920583.xyz URLs of the 2026-11-22 dramadog batch: 403
+// bare, 200 with the Referer). No BOT_CHALLENGED entry needed — with the
+// Referer the probe verifies these hosts for real instead of writing them
+// off as unverifiable.
+const REFERER_HOSTS = {
+    'v.73920582.xyz': 'https://dramadog.app/',
+    'v.73920583.xyz': 'https://dramadog.app/',
+};
+const refererFor = url => {
+    try {
+        const h = new URL(url).hostname;
+        for (const [host, ref] of Object.entries(REFERER_HOSTS)) {
+            if (h === host || h.endsWith('.' + host)) return ref;
+        }
+    } catch { /* fall through to bare probe */ }
+    return null;
+};
+
 // Hosts behind aggressive Cloudflare bot challenges: they return 403 to
 // non-browser clients (Actions runners, curl, headless) but stream fine in
 // real browsers — the live catalog already plays 680+ URLs from
 // dramadunyam.com. A 403/503 from these hosts is reported as a WARN
 // ("unverifiable"), NOT a failure — verify those by playback instead.
-const BOT_CHALLENGED_HOSTS = ['dramadunyam.com'];
+// v5.7.1 — v.dramadog.app now serves a Cloudflare challenge page to every
+// non-browser client (curl, GitHub Actions, even the proxy worker from
+// different egress IPs), while the same URLs verified 200 + ACAO:* bare the
+// day the batch was scraped (2026-11-22 → 2026-11-23 change). Real browsers
+// may still pass — verify those records by playback. A 403 here is
+// WARN-unverifiable, never a FAIL.
+const BOT_CHALLENGED_HOSTS = ['dramadunyam.com', 'dramadog.app'];
 const isBotChallenged = url => {
     try {
         const h = new URL(url).hostname;
@@ -186,9 +217,12 @@ async function probeUrl(url, { timeout = 10000 } = {}) {
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), timeout);
         try {
+            const headers = { 'User-Agent': UA, Range: 'bytes=0-0' };
+            const ref = refererFor(url);
+            if (ref) headers.Referer = ref;
             const res = await fetch(url, {
                 method: 'GET',
-                headers: { 'User-Agent': UA, Range: 'bytes=0-0' },
+                headers,
                 redirect: 'follow',
                 signal: ctrl.signal,
             });
@@ -218,6 +252,7 @@ async function pool(items, worker, size = 8) {
 }
 
 let okRecs = 0;
+let unverifiedRecs = 0;   // v5.7.1 — records fully behind bot challenges (added anyway)
 const dead = [];           // expired/unreachable episode URLs — WARN, record is added anyway
 const structural = [];     // broken scrapes — FAIL the run
 let checked = 0, emptyUrls = 0, unverified = 0;
@@ -243,7 +278,7 @@ for (const r of toProbe) {
         if (!u) return { empty: true };
         return probeUrl(u);
     });
-    let okCount = 0, deadCount = 0;
+    let okCount = 0, deadCount = 0, unverifiedRec = 0;   // v5.7.1 — challenge-403s within THIS record
     results.forEach((res, idx) => {
         if (res.empty) {
             emptyUrls++;
@@ -260,6 +295,7 @@ for (const r of toProbe) {
             const url = urls[idx];
             if (!res.error && (res.status === 403 || res.status === 503) && isBotChallenged(url)) {
                 unverified++;
+                unverifiedRec++;
                 console.log(`  ⚠ WARN "${r.title}" ep ${idx + 1}/${urls.length} → ${why} — host challenges bots, unverifiable from Actions (verify by playback)`);
             } else {
                 dead.push({ title: r.title, ep: idx + 1, total: urls.length, why, url });
@@ -273,6 +309,11 @@ for (const r of toProbe) {
     if (okCount === urls.length && okCount > 0) {
         okRecs++;
         console.log(`  ✓ "${r.title}": ${okCount}/${urls.length} URLs OK`);
+    } else if (okCount === 0 && deadCount === unverifiedRec && unverifiedRec > 0) {
+        // v5.7.1 — every non-OK URL 403'd on a bot-challenged host: the batch cannot
+        // be verified from Actions, but nothing proves it dead either. Added anyway.
+        unverifiedRecs++;
+        console.log(`  ⚠ "${r.title}": 0/${urls.length} reachable but ALL on bot-challenged hosts — unverifiable from Actions, verify by playback; added anyway.`);
     } else if (okCount === 0) {
         structural.push({ title: r.title, why: `all ${urls.length} episode URLs unreachable (batch fully expired or bad scrape)` });
         console.log(`  ✗ FAIL "${r.title}": 0/${urls.length} URLs reachable — refusing to add a fully-dead record.`);
