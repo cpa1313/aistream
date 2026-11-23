@@ -357,7 +357,10 @@
         // v5.5.1 — the *short.com family randomly 403s ~50-70% of direct
         // requests (fatal for hls.js). Routing them through proxy2 /?u= lets
         // the worker retry server-side (8 attempts) and rewrite playlists.
-        const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net', 'v.73920582.xyz', 'v.73920583.xyz', 'static.livoshort.com', 'static.miraluneshort.com', 'static.miralunedrama.com', 'static.cinerrashort.com', 'static.rivoshort.com', 'static.versevoyagetv.com'];
+        // v5.6.1 — added the dramadog /new CDN families (all verified bare-200,
+        // no Referer gate): they send no ACAO so the browser can't fetch them
+        // direct — everything here goes through proxy2 /?u= server-side.
+        const SEGMENT_PROXY_HOSTS = ['zshipricf.farsunpteltd.net', 'v.73920582.xyz', 'v.73920583.xyz', 'static.livoshort.com', 'static.miraluneshort.com', 'static.miralunedrama.com', 'static.cinerrashort.com', 'static.rivoshort.com', 'static.versevoyagetv.com', 'video-v1.mydramawave.com', 'v-mps.crazymaplestudios.com', 'acdn-v-us.stardust-tv.com', 'acdn-v.stardust-tv.com', 'cdn.my-muse.ai', 'dirjqbe1kaah2.cloudfront.net', 'cdn2.nsstorage.space'];
         // Fresh-link resolver (worker v3): for dramadunyam-sourced titles whose
         // stored links carry short-lived signatures (gorogoro auth_keys die
         // ~2h after scrape), watch.html adds WORKER/dun/{id}/{ep} as the LAST
