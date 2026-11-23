@@ -61,6 +61,11 @@ on:
 
 permissions:
   contents: write                # the rescue step commits new-videos.json
+  actions: write                 # lets the rescue step trigger "Rebuild catalog"
+                                 # via workflow_dispatch — a GITHUB_TOKEN push
+                                 # CANNOT trigger push-based workflows itself
+                                 # (GitHub recursion guard), so the rebuild
+                                 # must be dispatched explicitly
 
 concurrency:
   group: video-health-check
@@ -121,6 +126,7 @@ jobs:
           key: wdr-ticket-${{ github.run_id }}
 
       - name: Commit rescued links
+        id: commit
         if: steps.check.outcome == 'failure' && steps.rescue.outcome == 'success'
         run: |
           if git diff --quiet -- new-videos.json; then
@@ -129,14 +135,24 @@ jobs:
           fi
           git config user.name  "video-rescue-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          SLUGS=$(python -c "import json;print(', '.join(v['slug'] for v in json.load(open('health-results/rescue.json'))['videos']))")
+          # unique slugs, truncated so the subject line stays one line
+          SLUGS=$(python -c "import json;print(', '.join(dict.fromkeys(v['slug'] for v in json.load(open('health-results/rescue.json'))['videos']))[:160])")
           git add new-videos.json
-          # NO [skip ci] here: this workflow has no push trigger, so it cannot
-          # re-trigger itself — but the repo's "Rebuild catalog" workflow
-          # (rebuild-catalog.yml, push-triggered on new-videos.json) MUST run
-          # after every rescue commit to re-bake data-part-3.js for the site.
+          # NOTE: this push uses GITHUB_TOKEN, and GitHub deliberately does NOT
+          # let GITHUB_TOKEN pushes trigger other push-based workflows (recursion
+          # guard). The "Trigger catalog rebuild" step below therefore dispatches
+          # rebuild-catalog.yml explicitly — that re-bakes data-part-3.js so the
+          # site actually serves the fresh links.
           git commit -m "chore(rescue): fresh video links for ${SLUGS}"
           git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger catalog rebuild (re-bakes data-part-3.js from the rescued links)
+        if: steps.commit.outputs.committed == 'true'
+        run: gh workflow run rebuild-catalog.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
 
       - name: Upload check + rescue details
         if: always()
