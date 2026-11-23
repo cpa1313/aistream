@@ -168,6 +168,39 @@
             .nav-drop:hover .nav-menu, .nav-drop:focus-within .nav-menu { display: none; }
             .nav-drop.open .nav-menu, .nav-drop.open:hover .nav-menu, .nav-drop.open:focus-within .nav-menu { display: block; }
         }
+            /* ===== Featured hero slider (the list to edit is in the page body,
+           inside the FEATURED <script> right under the h1) ===== */
+        .hero { position: relative; margin: 0 0 1.75rem; border-radius: 14px; overflow: hidden; background: var(--bg-secondary); border: 1px solid #333; }
+        .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 22%; filter: blur(26px) brightness(0.38) saturate(1.15); transform: scale(1.12); }
+        .hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(18,18,18,0.9) 0%, rgba(18,18,18,0.55) 45%, rgba(18,18,18,0.28) 100%); }
+        .hero-card { position: relative; display: flex; gap: clamp(1rem, 3vw, 2rem); padding: clamp(1rem, 3vw, 2.25rem); align-items: stretch; transition: opacity 0.28s ease, transform 0.28s ease; }
+        .hero-card.fading { opacity: 0; transform: translateY(10px); }
+        .hero-poster { flex: 0 0 auto; width: clamp(104px, 24vw, 210px); aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); align-self: center; background: #2a2a2a; }
+        .hero-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.55rem; }
+        .hero-eyebrow { color: var(--accent); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+        .hero-eyebrow .hero-dot { opacity: 0.65; margin: 0 0.35em; }
+        .hero-title { font-size: clamp(1.3rem, 3.6vw, 2.4rem); font-weight: 800; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .hero-title a { color: inherit; text-decoration: none; }
+        .hero-meta { color: var(--text-secondary); font-size: clamp(0.8rem, 1.4vw, 0.95rem); }
+        .hero-blurb { color: var(--text-secondary); font-size: clamp(0.85rem, 1.5vw, 1rem); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-width: 62ch; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.5rem; }
+        .hero-btn { display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 999px; padding: 0.7rem 1.6rem; font-size: 1rem; font-weight: 700; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, color 0.15s; }
+        .hero-btn:active { transform: scale(0.97); }
+        .hero-btn-watch { background: linear-gradient(180deg, #ff8a1e, var(--accent)); color: #fff; box-shadow: 0 4px 16px rgba(255,107,53,0.35); }
+        .hero-btn-watch:hover { box-shadow: 0 6px 22px rgba(255,107,53,0.5); }
+        .hero-btn-details { background: rgba(30,30,30,0.85); color: var(--text-primary); border: 1px solid #444; }
+        .hero-btn-details:hover { border-color: var(--accent); color: var(--accent); }
+        .hero-dashes { position: relative; display: flex; justify-content: center; gap: 0.45rem; padding: 0 0 1rem; }
+        .hero-dash { width: 26px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.22); border: none; cursor: pointer; padding: 0; transition: background 0.25s, width 0.25s; }
+        .hero-dash.active { background: var(--accent); width: 38px; }
+        @media (max-width: 560px) {
+            .hero-shade { background: linear-gradient(180deg, rgba(18,18,18,0.55) 0%, rgba(18,18,18,0.9) 72%); }
+            .hero-card { gap: 0.85rem; }
+            .hero-poster { width: clamp(88px, 30vw, 120px); }
+            .hero-blurb { -webkit-line-clamp: 2; }
+            .hero-btn { padding: 0.6rem 1.2rem; font-size: 0.92rem; }
+            .hero-dash { width: 18px; } .hero-dash.active { width: 28px; }
+        }
     </style>
         <meta name="ppck-ver" content="104132b0d092d77768966b2e34f1fcfe" />
 </head>
@@ -241,6 +274,143 @@
 
     <div class="container">
         <h1 class="seo-h1">Watch Full Short Dramas Online Free</h1>
+
+        <!-- ==================== FEATURED SLIDER ====================
+             You pick the featured videos: edit the FEATURED list inside the
+             <script> right below this section (instructions are there).
+             Empty list = the slider stays hidden and the page is unchanged. -->
+        <section class="hero" id="hero" aria-label="Featured dramas" hidden>
+            <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
+            <div class="hero-shade" aria-hidden="true"></div>
+            <div class="hero-card" id="heroCard"></div>
+            <div class="hero-dashes" id="heroDashes" role="tablist" aria-label="Featured slides"></div>
+        </section>
+        <script>
+            /* =====================================================================
+               FEATURED VIDEOS — EDIT THIS LIST (nothing below needs touching)
+               =====================================================================
+               One entry per featured drama, shown in order. Two ways to write
+               an entry:
+
+                   'slug'                            → shorthand, just the slug
+                   { slug: 'slug', blurb: 'text' }   → with your own pitch
+
+               • slug (required): copy it from the drama's watch-page URL, e.g.
+                   fulldrama.stream/watch.html?slug=mythic-beasts-world-at-my-feet-dubbed
+                 → the slug is everything after ?slug=
+               • blurb (optional): 1–2 sentences shown under the title. Leave it
+                 out to use the description already stored in the catalog.
+               • A slug that is not in the catalog (typo, or the title was
+                 removed later) is skipped with a console warning — the site
+                 never breaks.
+               • Aim for 3–6 slides. An EMPTY list hides the whole slider.
+               • The slider auto-advances every 6 s, pauses on hover/touch,
+                 pauses in background tabs; visitors can tap the dashes or
+                 swipe on mobile.
+
+               Replace the three example entries below with your own picks: */
+            const FEATURED = [
+                { slug: 'mythic-beasts-world-at-my-feet-dubbed' },
+                { slug: 'the-billionaires-5-million-muscle-wife' },
+                { slug: 'his-servant-by-day-his-bedmate-by-night' },
+                // { slug: 'another-drama-slug', blurb: 'Your own pitch here.' },
+            ];
+
+            /* ---------- renderer — no need to edit below this line ---------- */
+            (function buildHero() {
+                const cat = (typeof dramas !== 'undefined') ? dramas : [];
+                const bySlug = new Map(cat.map(d => [d.slug, d]));
+                const slides = [];
+                (Array.isArray(FEATURED) ? FEATURED : []).forEach(entry => {
+                    const slug = typeof entry === 'string' ? entry : (entry && entry.slug);
+                    const rec = slug ? bySlug.get(slug) : null;
+                    if (!rec) {
+                        if (slug) console.warn('Featured slider: slug not in catalog, skipped:', slug);
+                        return;
+                    }
+                    slides.push({
+                        rec,
+                        blurb: (typeof entry === 'object' && entry && entry.blurb)
+                            ? entry.blurb
+                            : (rec.description || rec.about || ''),
+                    });
+                });
+                const hero = document.getElementById('hero');
+                if (!hero || slides.length === 0) return;   // empty list → stays hidden
+                hero.hidden = false;
+
+                const platformLabel = p => (window.navPlatformLabel
+                    ? window.navPlatformLabel(p)
+                    : (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''));
+                const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+                    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                const watchUrl = s => 'watch.html?slug=' + encodeURIComponent(s);
+                const card = document.getElementById('heroCard');
+                const bg = document.getElementById('heroBg');
+                const dashes = document.getElementById('heroDashes');
+
+                slides.forEach((s, i) => {
+                    const b = document.createElement('button');
+                    b.className = 'hero-dash';
+                    b.type = 'button';
+                    b.setAttribute('aria-label', 'Show featured drama ' + (i + 1) + ': ' + s.rec.title);
+                    b.onclick = () => show(i, true);
+                    dashes.appendChild(b);
+                    const img = new Image();
+                    img.src = s.rec.cover;   // preload every poster once
+                });
+                const dashEls = Array.from(dashes.children);
+                let cur = -1, timer = null;
+                const AUTO_MS = 6000;
+
+                function renderSlide(s, i) {
+                    const blurb = String(s.blurb || '').trim();
+                    card.innerHTML =
+                        '<img class="hero-poster" src="' + esc(s.rec.cover) + '" alt="' + esc(s.rec.title) + ' poster"' + (i === 0 ? '' : ' loading="lazy"') + '>' +
+                        '<div class="hero-body">' +
+                            '<div class="hero-eyebrow">Featured<span class="hero-dot">·</span>' + (i + 1) + '/' + slides.length + '</div>' +
+                            '<div class="hero-title"><a href="' + watchUrl(s.rec.slug) + '">' + esc(s.rec.title) + '</a></div>' +
+                            '<div class="hero-meta">' + esc(platformLabel(s.rec.platform)) +
+                                (s.rec.episodes ? ' · ' + s.rec.episodes + ' episodes' : '') + '</div>' +
+                            (blurb ? '<div class="hero-blurb">' + esc(blurb) + '</div>' : '') +
+                            '<div class="hero-actions">' +
+                                '<a class="hero-btn hero-btn-watch" href="' + watchUrl(s.rec.slug) + '">▶ Watch now</a>' +
+                                '<a class="hero-btn hero-btn-details" href="' + watchUrl(s.rec.slug) + '">Details</a>' +
+                            '</div>' +
+                        '</div>';
+                    bg.style.backgroundImage = 'url("' + s.rec.cover + '")';
+                }
+
+                function show(i, manual) {
+                    if (i === cur) { restart(); return; }
+                    cur = i;
+                    dashEls.forEach((d, k) => d.classList.toggle('active', k === i));
+                    card.classList.add('fading');
+                    setTimeout(() => { renderSlide(slides[i], i); card.classList.remove('fading'); }, 180);
+                    if (manual) restart();
+                }
+                function restart() {
+                    clearInterval(timer);
+                    if (slides.length > 1) timer = setInterval(() => show((cur + 1) % slides.length, false), AUTO_MS);
+                }
+
+                hero.addEventListener('mouseenter', () => clearInterval(timer));
+                hero.addEventListener('mouseleave', restart);
+                document.addEventListener('visibilitychange', () => (document.hidden ? clearInterval(timer) : restart()));
+                let touchX = null;
+                hero.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; clearInterval(timer); }, { passive: true });
+                hero.addEventListener('touchend', e => {
+                    if (touchX === null) return;
+                    const dx = e.changedTouches[0].clientX - touchX;
+                    if (Math.abs(dx) > 40) show((cur + (dx < 0 ? 1 : slides.length - 1)) % slides.length, true);
+                    touchX = null;
+                    restart();
+                }, { passive: true });
+
+                show(0, false);
+                restart();
+            })();
+        </script>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="🔍 Search by title, platform, or genre..." oninput="handleSearch()">
         </div>
