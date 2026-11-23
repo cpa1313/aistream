@@ -91,7 +91,11 @@ jobs:
             --results health-results/results.json
 
       - name: Restore ticket cookie from the previous run
-        if: failure() && steps.check.outcome == 'failure'
+        # Gate on steps.check.outcome, NOT failure(): the check step uses
+        # continue-on-error, so its CONCLUSION is 'success' and failure() never
+        # becomes true. Gating on failure() silently skipped this whole chain
+        # on every broken run (steps.run-outcome vs run-conclusion).
+        if: steps.check.outcome == 'failure'
         uses: actions/cache/restore@v4
         with:
           path: .wdr-ticket/cookies.txt
@@ -101,7 +105,7 @@ jobs:
 
       - name: Rescue broken videos (scrape fresh links from watchdramareels)
         id: rescue
-        if: failure()             # only when the check above found problems
+        if: steps.check.outcome == 'failure'   # check found broken videos
         run: |
           python scripts/rescue_videos.py \
             --results health-results/results.json \
@@ -110,14 +114,14 @@ jobs:
             --cookie-file .wdr-ticket/cookies.txt
 
       - name: Save ticket cookie for the next run
-        if: failure() && steps.rescue.outcome == 'success'
+        if: steps.check.outcome == 'failure' && steps.rescue.outcome == 'success'
         uses: actions/cache/save@v4
         with:
           path: .wdr-ticket/cookies.txt
           key: wdr-ticket-${{ github.run_id }}
 
       - name: Commit rescued links
-        if: failure() && steps.rescue.outcome == 'success'
+        if: steps.check.outcome == 'failure' && steps.rescue.outcome == 'success'
         run: |
           if git diff --quiet -- new-videos.json; then
             echo "no catalog changes to commit"
@@ -127,7 +131,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           SLUGS=$(python -c "import json;print(', '.join(v['slug'] for v in json.load(open('health-results/rescue.json'))['videos']))")
           git add new-videos.json
-          git commit -m "chore(rescue): fresh video links for ${SLUGS} [skip ci]"
+          # NO [skip ci] here: this workflow has no push trigger, so it cannot
+          # re-trigger itself — but the repo's "Rebuild catalog" workflow
+          # (rebuild-catalog.yml, push-triggered on new-videos.json) MUST run
+          # after every rescue commit to re-bake data-part-3.js for the site.
+          git commit -m "chore(rescue): fresh video links for ${SLUGS}"
           git push
 
       - name: Upload check + rescue details
