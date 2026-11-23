@@ -69,6 +69,9 @@
 
         .video-wrapper { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.6); aspect-ratio: 16/9; position: relative; margin-bottom: 1.5rem; }
         video { width: 100%; height: 100%; display: block; background: #000; }
+        /* Upload-hosted iframe embeds (Streamable etc.) fill the same 16/9 box
+           as the native player; JS toggles which of the two is visible. */
+        #embedPlayer { width: 100%; height: 100%; border: 0; background: #000; display: none; }
 
         /* Episode Section - Above Title */
         .episode-section { background: var(--bg-secondary); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid #333; }
@@ -249,6 +252,16 @@
                 <div class="video-wrapper">
                     <div class="loading" id="loadingText">Loading video...</div>
                     <video id="videoPlayer" controls playsinline></video>
+                    <iframe id="embedPlayer" title="Episode player" scrolling="no"
+                            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                            allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
+                            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-modals"></iframe>
+                    <!-- sandbox omits allow-popups / allow-top-navigation: Streamable's
+                         free tier fires pop-under ad redirects on play; the sandbox
+                         blocks them so viewers always stay on fulldrama.stream.
+                         Fullscreen still works (governed by allowfullscreen, not the
+                         sandbox). If Streamable ever needs popups legitimately, add
+                         "allow-popups" back. -->
                 </div>
 
                 <!-- 3. Episode Section -->
@@ -302,6 +315,22 @@
         // Resolved episode sources: sources[mirrorIndex][episodeIndex] -> m3u8 URL
         let sources = [];
         let activeMirror = 0;
+
+        // ---- view counting (views-worker.js) ------------------------------
+        // One beacon per EPISODE START, not per watch-page load: initial play,
+        // prev/next, episode grid/select and auto-advance all funnel through
+        // loadVideo(), so every episode a viewer actually plays counts as one
+        // view of that drama. Mirror-failure retries re-call playCurrent()
+        // directly and never pass through loadVideo(), so one episode start
+        // counts exactly once. '' disables tracking silently.
+        const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
+        function countView() {
+            if (!VIEWS_API || !currentDrama || !currentDrama.slug) return;
+            try {
+                fetch(`${VIEWS_API}/view?slug=${encodeURIComponent(currentDrama.slug)}`,
+                      { keepalive: true }).catch(() => {});
+            } catch (e) {}
+        }
 
         /* ============================================
            EPISODE SOURCE RESOLUTION
@@ -459,14 +488,10 @@
             if (slug) {
                 const drama = dramas.find(d => d.slug === slug);
                 if (drama) {
-                    // View beacon — one fire-and-forget hit per watch-page load;
-                    // the counter worker (views-worker.js) aggregates these for
-                    // the Popular tab. Keep VIEWS_API identical to index.html
-                    // ('' disables tracking silently).
-                    const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
-                    if (VIEWS_API) {
-                        try { fetch(`${VIEWS_API}/view?slug=${encodeURIComponent(drama.slug)}`, { keepalive: true }).catch(() => {}); } catch (e) {}
-                    }
+                    // View counting happens per EPISODE START inside loadVideo()
+                    // (see countView() above): every episode a viewer plays adds
+                    // one view, matching how reel platforms count. loadPlayer()
+                    // -> loadVideo(1) fires the first one automatically.
                     loadPlayer(drama);
                     updateSEO(drama);
                 } else {
@@ -666,8 +691,73 @@
             activeMirror = 0;
             const available = sources.length ? sources[0].length : 0;
             if (currentEpisode > available) currentEpisode = available;
+            if (available && currentEpisode >= 1) countView();  // 1 view = 1 episode started
             updateEpisodeButtons(available);
             playCurrent();
+        }
+
+        // ==========================================
+        // UPLOAD-HOSTED EMBEDS (Streamable etc.)
+        // Episodes you upload yourself can point at embed pages instead of
+        // HLS/MP4 URLs, e.g. https://streamable.com/e/9t47ph?loop=0 (the
+        // /e/<id> form is Streamable's official iframe player). These play in
+        // an <iframe> that shares the player box with the native <video>;
+        // exactly one of the two is visible at any moment. Plain Streamable
+        // watch URLs (streamable.com/<id>) are normalized to /e/<id> embeds.
+        // ==========================================
+        function embedHost(url) {
+            try { return (new URL(url, location.href).hostname || '').replace(/^www\./, ''); }
+            catch { return ''; }
+        }
+        function isEmbedUrl(url) {
+            const h = embedHost(url);
+            if (h === 'streamable.com') return true;                  // /e/, /o/ and plain watch URLs all normalize
+            if (h === 'youtube.com' || h === 'youtube-nocookie.com') return url.includes('/embed/');
+            if (h === 'player.vimeo.com') return url.includes('/video/');
+            if (h === 'dailymotion.com') return url.includes('/embed/');
+            return false;
+        }
+        function embedSrc(url) {
+            if (embedHost(url) === 'streamable.com') {
+                try {
+                    const u = new URL(url, location.href);
+                    const m = u.pathname.match(/^\/(?:e|o)\/([A-Za-z0-9]+)\/?$/)
+                           || u.pathname.match(/^\/([A-Za-z0-9]+)\/?$/);
+                    if (m) return `https://streamable.com/e/${m[1]}${u.search}`;  // keeps ?loop=0 etc.
+                } catch {}
+                return url;
+            }
+            return url;
+        }
+        let embedLoadTimer = null;
+        function destroyEmbed() {
+            // Swap back to the native <video> and stop any embed that is
+            // playing — clearing the src is what actually stops the iframe's
+            // audio; hiding it alone would leave the episode running.
+            const frame = document.getElementById('embedPlayer');
+            document.getElementById('videoPlayer').style.display = '';
+            if (frame) {
+                frame.style.display = 'none';
+                if (frame.src && frame.src !== 'about:blank') frame.src = 'about:blank';
+            }
+            clearTimeout(embedLoadTimer);
+        }
+        function playEmbed(url) {
+            const frame = document.getElementById('embedPlayer');
+            document.getElementById('videoPlayer').style.display = 'none';
+            frame.style.display = 'block';   // CSS default is none; '' would not unhide it
+            let settled = false;
+            frame.onload = () => { settled = true; hideMsg(); };
+            frame.src = embedSrc(url);
+            clearTimeout(embedLoadTimer);
+            // Embed pages don't report playback errors to the parent, so if
+            // the iframe never even loads, say so but keep trying — the
+            // viewer can still switch episodes or mirrors manually.
+            embedLoadTimer = setTimeout(() => {
+                if (!settled && frame.style.display !== 'none') {
+                    showMsg('Still loading... if nothing appears, this episode may be unavailable — try another episode.', '#ffcc66');
+                }
+            }, 12000);
         }
 
         function playNative(url, candidates) {
@@ -711,6 +801,15 @@
             destroyHls();
 
             const url = candidates[activeMirror];
+
+            // Upload-hosted embed (Streamable etc.)? Swap the native player
+            // for the embed iframe. Mirror fallback cannot be auto-detected
+            // across iframes, so the embed is the last stop for this episode.
+            if (isEmbedUrl(url)) {
+                playEmbed(url);
+                return;
+            }
+            destroyEmbed();   // restore the native <video> when leaving an embed source
 
             if (/\.mp4($|\?)/.test(url)) {
                 // Progressive MP4 (e.g. DramaBox CDN links) — play natively,
