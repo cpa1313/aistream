@@ -315,15 +315,20 @@
         // Resolved episode sources: sources[mirrorIndex][episodeIndex] -> m3u8 URL
         let sources = [];
         let activeMirror = 0;
+        let workerRetried = false;   // v5.8.1 — one worker-failover retry per episode start
 
-        // ---- view counting (views-worker.js) ------------------------------
+        // ---- view counting (views-sync worker -> GitHub views.json) -------
         // One beacon per EPISODE START, not per watch-page load: initial play,
         // prev/next, episode grid/select and auto-advance all funnel through
         // loadVideo(), so every episode a viewer actually plays counts as one
         // view of that drama. Mirror-failure retries re-call playCurrent()
         // directly and never pass through loadVideo(), so one episode start
         // counts exactly once. '' disables tracking silently.
-        const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
+        // v5.9 — beacons go to the views-sync worker (cpagrid2 account). It
+        // buffers them in memory and periodically COMMITS merged counts into
+        // views.json in the repo (GitHub = source of truth, no KV, nothing
+        // resets). Same GET /view?slug= contract as before.
+        const VIEWS_API = 'https://views-sync.cpagrid2.workers.dev';
         function countView() {
             if (!VIEWS_API || !currentDrama || !currentDrama.slug) return;
             try {
@@ -353,25 +358,30 @@
            Example: const SEGMENT_PROXY_BASE = 'https://segment-proxy.you.workers.dev/?u=';
            (a bare worker URL without the ?u= also works — it is added automatically)
            ============================================ */
-        /* v5.8 — multi-worker pool + failover. Cloudflare's FREE plan cap
-           (100,000 requests/day, error 1027) applies per ACCOUNT — every
-           worker in the same account shares one pool, so a second worker only
-           adds real capacity when it is deployed on a DIFFERENT free account.
-           Playback picks one worker per session (random start = load spread)
-           and flips to the next entry when the current one is over quota
-           (429) or unreachable. Same behavior as before with one worker. */
+        /* v5.8.1 — worker pool with priority + failover. Cloudflare's FREE
+           plan cap (100,000 requests/day, error 1027) applies per ACCOUNT —
+           every worker in the same account shares one pool, so a second
+           worker only adds real capacity when it is deployed on a DIFFERENT
+           free account. Playback STARTS on the first entry (priority) and
+           flips to the next entry when the current one fails (429 /
+           unreachable); the flip is sticky for the browser session. One
+           failover retry per episode start — see workerRetried below. */
         const PROXY_WORKERS = [
-            'https://proxy2.webmasterjamezzz13.workers.dev',
-            'https://long-snow-3e4b.cpagrid2.workers.dev',   // proxy3 — second account, own 100k/day pool
+            'https://long-snow-3e4b.cpagrid2.workers.dev',   // proxy3 — PRIORITY (second account, own fresh 100k/day pool)
+            'https://proxy2.webmasterjamezzz13.workers.dev', // backup — revives at 00:00 UTC when its account quota resets
             // Paste more workers from other free accounts here the same way.
         ];
         let _curWorker = -1;
         try {
             const saved = sessionStorage.getItem('proxyWorkerIdx');
+            // v5.8.1 — deterministic priority: always START at the first
+            // entry; sticky flips move a failing session onward. (Random
+            // spreading removed: a dead first pick wasted whole sessions
+            // because single-mirror titles could not recover.)
             _curWorker = (saved !== null && Number(saved) < PROXY_WORKERS.length)
                 ? Number(saved)
-                : Math.floor(Math.random() * PROXY_WORKERS.length);
-        } catch { _curWorker = Math.floor(Math.random() * PROXY_WORKERS.length); }
+                : 0;
+        } catch { _curWorker = 0; }
         function currentWorker() { return PROXY_WORKERS[_curWorker] || PROXY_WORKERS[0] || ''; }
         function flipWorker() {
             if (PROXY_WORKERS.length < 2) return false;   // nothing to flip to
@@ -720,6 +730,7 @@
         function loadVideo(ep) {
             currentEpisode = parseInt(ep) || 1;
             activeMirror = 0;
+            workerRetried = false;   // v5.8.1 — fresh failover budget per episode
             const available = sources.length ? sources[0].length : 0;
             if (currentEpisode > available) currentEpisode = available;
             if (available && currentEpisode >= 1) countView();  // 1 view = 1 episode started
@@ -881,10 +892,20 @@
                         playNative(url, candidates);
                         return;
                     }
+                    // v5.8.1 — worker failover FIRST: with priority picking a
+                    // dead worker (quota 429 / outage) must not kill playback
+                    // on single-mirror titles, for which the mirror-advance
+                    // branch below never runs. Flip to the next worker and
+                    // retry the SAME mirror once before touching mirrors.
+                    if (!workerRetried && PROXY_WORKERS.length > 1 && flipWorker()) {
+                        workerRetried = true;
+                        showMsg('Playback worker failed — switching to backup worker...');
+                        playCurrent();
+                        return;
+                    }
                     // Try the next mirror before giving up
                     if (activeMirror + 1 < candidates.length) {
                         activeMirror++;
-                        flipWorker();   // v5.8 — a fatal mirror failure may be worker quota/routing; retry via next worker (no-op with one worker)
                         showMsg(`Source failed, trying mirror ${activeMirror + 1}...`);
                         playCurrent();
                     } else {
@@ -901,15 +922,24 @@
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 // iOS / Safari native HLS
-                video.addEventListener('error', () => {
+                // v5.8.1 — worker failover first, then mirrors; the once-
+                // listener is re-armed for the retry attempt so a second
+                // failure can still advance mirrors.
+                const nativeFail = () => {
+                    if (!workerRetried && PROXY_WORKERS.length > 1 && flipWorker()) {
+                        workerRetried = true;
+                        video.addEventListener('error', nativeFail, { once: true });
+                        video.src = proxiedUrl(url);
+                        return;
+                    }
                     if (activeMirror + 1 < candidates.length) {
                         activeMirror++;
-                        flipWorker();   // v5.8 — retry via next worker when configured
                         playCurrent();
                     } else {
                         showMsg('❌ Error: Video failed to load.', '#ff4444');
                     }
-                }, { once: true });
+                };
+                video.addEventListener('error', nativeFail, { once: true });
                 video.src = proxiedUrl(url);
                 video.addEventListener('loadedmetadata', () => {
                     hideMsg();
