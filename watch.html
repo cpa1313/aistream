@@ -353,7 +353,33 @@
            Example: const SEGMENT_PROXY_BASE = 'https://segment-proxy.you.workers.dev/?u=';
            (a bare worker URL without the ?u= also works — it is added automatically)
            ============================================ */
-        const SEGMENT_PROXY_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/?u=';
+        /* v5.8 — multi-worker pool + failover. Cloudflare's FREE plan cap
+           (100,000 requests/day, error 1027) applies per ACCOUNT — every
+           worker in the same account shares one pool, so a second worker only
+           adds real capacity when it is deployed on a DIFFERENT free account.
+           Playback picks one worker per session (random start = load spread)
+           and flips to the next entry when the current one is over quota
+           (429) or unreachable. Same behavior as before with one worker. */
+        const PROXY_WORKERS = [
+            'https://proxy2.webmasterjamezzz13.workers.dev',
+            'https://long-snow-3e4b.cpagrid2.workers.dev',   // proxy3 — second account, own 100k/day pool
+            // Paste more workers from other free accounts here the same way.
+        ];
+        let _curWorker = -1;
+        try {
+            const saved = sessionStorage.getItem('proxyWorkerIdx');
+            _curWorker = (saved !== null && Number(saved) < PROXY_WORKERS.length)
+                ? Number(saved)
+                : Math.floor(Math.random() * PROXY_WORKERS.length);
+        } catch { _curWorker = Math.floor(Math.random() * PROXY_WORKERS.length); }
+        function currentWorker() { return PROXY_WORKERS[_curWorker] || PROXY_WORKERS[0] || ''; }
+        function flipWorker() {
+            if (PROXY_WORKERS.length < 2) return false;   // nothing to flip to
+            _curWorker = (_curWorker + 1) % PROXY_WORKERS.length;
+            try { sessionStorage.setItem('proxyWorkerIdx', String(_curWorker)); } catch {}
+            return true;
+        }
+        const segmentProxyBase = () => currentWorker() ? currentWorker() + '/?u=' : '';
         // v5.5.1 — the *short.com family randomly 403s ~50-70% of direct
         // requests (fatal for hls.js). Routing them through proxy2 /?u= lets
         // the worker retry server-side (8 attempts) and rewrite playlists.
@@ -366,15 +392,16 @@
         // ~2h after scrape), watch.html adds WORKER/dun/{id}/{ep} as the LAST
         // mirror. Stored links are tried first; if they fail, the worker 302-
         // redirects to a freshly signed relay from dramadunyam's /play API.
-        const DUN_RESOLVER_BASE = 'https://proxy2.webmasterjamezzz13.workers.dev/dun';
+        const dunResolverBase = () => currentWorker() ? currentWorker() + '/dun' : '';
         function proxiedUrl(url) {
-            if (!SEGMENT_PROXY_BASE) return url;
+            const base0 = segmentProxyBase();
+            if (!base0) return url;
             try {
                 if (!SEGMENT_PROXY_HOSTS.includes(new URL(url, location.href).hostname)) return url;
                 // accept a bare worker URL too — append the ?u= query name if it's missing
-                const base = /[?&]u=$/.test(SEGMENT_PROXY_BASE)
-                    ? SEGMENT_PROXY_BASE
-                    : SEGMENT_PROXY_BASE.replace(/\/+$/, '') + '/?u=';
+                const base = /[?&]u=$/.test(base0)
+                    ? base0
+                    : base0.replace(/\/+$/, '') + '/?u=';
                 return base + encodeURIComponent(url);
             } catch { return url; }
         }
@@ -403,10 +430,11 @@
             // Fresh-link fallback: one resolver URL per episode position.
             // The worker 302-redirects to a freshly signed dramadunyam relay;
             // episodes dun can't serve return 404 and just show the normal error.
-            if (!DUN_RESOLVER_BASE || !currentDrama) return null;
+            const RBASE = dunResolverBase();
+            if (!RBASE || !currentDrama) return null;
             if (currentDrama.source !== 'dramadunyam') return null;
             if (!/^\d+$/.test(String(currentDrama.id))) return null;
-            return Array.from({ length: count }, (_, i) => `${DUN_RESOLVER_BASE}/${currentDrama.id}/${i + 1}`);
+            return Array.from({ length: count }, (_, i) => `${RBASE}/${currentDrama.id}/${i + 1}`);
         }
 
         async function resolveSources(drama) {
@@ -856,12 +884,13 @@
                     // Try the next mirror before giving up
                     if (activeMirror + 1 < candidates.length) {
                         activeMirror++;
+                        flipWorker();   // v5.8 — a fatal mirror failure may be worker quota/routing; retry via next worker (no-op with one worker)
                         showMsg(`Source failed, trying mirror ${activeMirror + 1}...`);
                         playCurrent();
                     } else {
                         let failHost = '';
                         try { failHost = data.frag && data.frag.url ? new URL(data.frag.url).hostname : ''; } catch {}
-                        if (!SEGMENT_PROXY_BASE && SEGMENT_PROXY_HOSTS.includes(failHost)) {
+                        if (!segmentProxyBase() && SEGMENT_PROXY_HOSTS.includes(failHost)) {
                             showMsg('❌ Error: this title\'s video CDN blocks playback from hosted sites. Fix: deploy segment-proxy-worker.js (see README), then set SEGMENT_PROXY_BASE in this file.', '#ff4444');
                         } else if (candidates[activeMirror] && candidates[activeMirror].includes('/dun/')) {
                             showMsg('❌ Fresh-link resolver could not fetch a new link from the server (currently optimizing the video right now). Please come back later!', '#ff4444');
@@ -875,6 +904,7 @@
                 video.addEventListener('error', () => {
                     if (activeMirror + 1 < candidates.length) {
                         activeMirror++;
+                        flipWorker();   // v5.8 — retry via next worker when configured
                         playCurrent();
                     } else {
                         showMsg('❌ Error: Video failed to load.', '#ff4444');
