@@ -4,7 +4,7 @@ window.DB_DRAMAS_P3.push(
  "id": 32074,
  "title": "XXLBride,OneBetrayalTooMany",
  "slug": "xxlbride-onebetrayaltoomany",
- "platform": "dramadog",
+ "platform": "dramaaiaso",
  "episodes": 60,
  "cover": "https://dramadog.app/c/32074.webp",
  "description": "They mocked me for being a fat bride who could never measure up to a Mafia Don. But I took a bullet for him,… All 60 episodes free, no ads, no sign-up.",
@@ -13,7 +13,7 @@ window.DB_DRAMAS_P3.push(
  "rating": null,
  "releaseDate": "",
  "dubbed": false,
- "source": "dramadog",
+ "source": "dramaaiaso",
  "urls": [
   "https://v.dramadog.app/hls/goodshort/31001963345/ep1.m3u8",
   "https://v.dramadog.app/hls/goodshort/31001963345/ep2.m3u8",
