@@ -367,8 +367,9 @@
            unreachable); the flip is sticky for the browser session. One
            failover retry per episode start — see workerRetried below. */
         const PROXY_WORKERS = [
-            'https://long-snow-3e4b.cpagrid2.workers.dev',   // proxy3 — PRIORITY (second account, own fresh 100k/day pool)
-            'https://proxy2.webmasterjamezzz13.workers.dev', // backup — revives at 00:00 UTC when its account quota resets
+            'https://proxy4.webmasterjamezzz.workers.dev',   // proxy4 — PRIORITY (third account, fresh 100k/day pool, deployed 2026-11-24)
+            'https://proxy2.webmasterjamezzz13.workers.dev', // second — first account (reset at 00:00 UTC)
+            'https://long-snow-3e4b.cpagrid2.workers.dev',   // third — second account (drained ~04:30 UTC, recovers at next 00:00 reset)
             // Paste more workers from other free accounts here the same way.
         ];
         let _curWorker = -1;
