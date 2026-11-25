@@ -9,7 +9,7 @@
   //
   // - assets.directory "." -> the repo root is served exactly as before.
   // - run_worker_first ["/api/*"] -> ONLY requests under /api/ run the
-  //   worker script (api-view.js); every other path goes straight to the
+  //   worker script (api_view.js); every other path goes straight to the
   //   static assets, untouched and as fast as before.
   // - GH_VIEWS_TOKEN must be added as a Secret in the dashboard:
   //   Workers & Pages -> aistream -> Settings -> Variables and Secrets
