@@ -1,0 +1,25 @@
+{
+  // Wrangler config for the "aistream" Workers static-assets project.
+  //
+  // Why this file exists: the deploy command runs `npx wrangler deploy`, and
+  // wrangler 4.16x refuses to deploy when it finds a `functions/` directory
+  // (a Pages-only feature) next to static files in the repo root. This site
+  // is a WORKERS static-assets project, so dynamic endpoints are done with
+  // a worker entry script (main) + an assets binding — not functions/.
+  //
+  // - assets.directory "." -> the repo root is served exactly as before.
+  // - run_worker_first ["/api/*"] -> ONLY requests under /api/ run the
+  //   worker script (api-view.js); every other path goes straight to the
+  //   static assets, untouched and as fast as before.
+  // - GH_VIEWS_TOKEN must be added as a Secret in the dashboard:
+  //   Workers & Pages -> aistream -> Settings -> Variables and Secrets
+  //   -> Add (type: Secret) — for Production (and Preview if used).
+  "name": "aistream",
+  "compatibility_date": "2026-11-01",
+  "main": "api-view.js",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  }
+}
