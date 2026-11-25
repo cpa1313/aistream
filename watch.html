@@ -49,6 +49,7 @@
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
     <script src="data.js"></script>
+    <script src="counter.js?v=1"></script>
     <style>
         :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -344,24 +345,21 @@
         let activeMirror = 0;
         let workerRetried = false;   // v5.8.1 — one worker-failover retry per episode start
 
-        // ---- view counting (views-sync worker -> GitHub views.json) -------
-        // One beacon per EPISODE START, not per watch-page load: initial play,
+        // ---- click counting (v5.12 — GitHub Actions, no worker) -----------
+        // One count per EPISODE START, not per watch-page load: initial play,
         // prev/next, episode grid/select and auto-advance all funnel through
         // loadVideo(), so every episode a viewer actually plays counts as one
         // view of that drama. Mirror-failure retries re-call playCurrent()
         // directly and never pass through loadVideo(), so one episode start
-        // counts exactly once. '' disables tracking silently.
-        // v5.9 — beacons go to the views-sync worker (cpagrid2 account). It
-        // buffers them in memory and periodically COMMITS merged counts into
-        // views.json in the repo (GitHub = source of truth, no KV, nothing
-        // resets). Same GET /view?slug= contract as before.
-        const VIEWS_API = 'https://views-sync.cpagrid2.workers.dev';
+        // counts exactly once.
+        // The counting machinery lives in counter.js (loaded above, same
+        // folder): it batches this visit's clicks and hands them to GitHub as
+        // ONE dispatch event; the views.yml Action in the aistream-views repo
+        // applies them to views.json and commits. No worker, no third-party
+        // service — GitHub and this site's own JavaScript are the only actors.
         function countView() {
-            if (!VIEWS_API || !currentDrama || !currentDrama.slug) return;
-            try {
-                fetch(`${VIEWS_API}/view?slug=${encodeURIComponent(currentDrama.slug)}`,
-                      { keepalive: true }).catch(() => {});
-            } catch (e) {}
+            if (!currentDrama || !currentDrama.slug) return;
+            if (window.siteCounter) window.siteCounter.countView(currentDrama.slug);
         }
 
         /* ============================================

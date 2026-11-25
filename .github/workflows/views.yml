@@ -1,0 +1,65 @@
+name: Update view counts
+
+# Fired by counter.js (site JS) via repository_dispatch. Each event carries
+# one visit's batched clicks; this workflow adds them to views.json and
+# tab-views.json and commits the files. Concurrency keeps runs sequential
+# so two visitors can never overwrite each other's increments.
+
+on:
+  repository_dispatch:
+    types: [view-increment]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: view-counts
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add clicks to views.json / tab-views.json
+        env:
+          PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          p = json.loads(os.environ.get('PAYLOAD') or '{}')
+
+          def bump(path, inc):
+              try:
+                  m = json.load(open(path))
+              except Exception:
+                  m = {}
+              if not isinstance(m, dict):
+                  m = {}
+              changed = False
+              # per-dispatch caps: max 100 keys, max +50 per key — enough for
+              # any honest visit's batch, and it bounds what abuse can inflate
+              for k, v in list((inc or {}).items())[:100]:
+                  try:
+                      v = int(v)
+                  except Exception:
+                      continue
+                  v = max(1, min(v, 50))
+                  k = str(k)[:100]
+                  m[k] = int(m.get(k, 0)) + v
+                  changed = True
+              if changed:
+                  json.dump(m, open(path, 'w'), ensure_ascii=False, indent=1, sort_keys=True)
+              return changed
+
+          c1 = bump('views.json', p.get('views'))
+          c2 = bump('tab-views.json', p.get('tabs'))
+          if c1 or c2:
+              subprocess.run(['git', 'config', 'user.name', 'views-bot'], check=True)
+              subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'add', '-A'], check=True)
+              r = subprocess.run(['git', 'commit', '-m', 'view counts: apply clicks'])
+              if r.returncode == 0:
+                  subprocess.run(['git', 'push'], check=True)
+          PY

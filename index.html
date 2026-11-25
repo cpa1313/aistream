@@ -64,6 +64,7 @@
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
     <script src="data.js"></script>
+    <script src="counter.js?v=1"></script>
     <style>
         :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -310,12 +311,9 @@
 
                Replace the three example entries below with your own picks: */
             const FEATURED = [
-                { slug: 'leave-with-a-broken-heart' },
+                { slug: 'mythic-beasts-world-at-my-feet-dubbed' },
                 { slug: 'the-billionaires-5-million-muscle-wife' },
-                { slug: 'the-dons-secret-obsession' },
-				{ slug: 'Forced to be Helen of Troy' },
-				{ slug: 'light-in-winter-dubbed' },
-				{ slug: 'stolen-by-my-fiances-uncle-2' },
+                { slug: 'his-servant-by-day-his-bedmate-by-night' },
                 // { slug: 'another-drama-slug', blurb: 'Your own pitch here.' },
             ];
 
@@ -469,8 +467,9 @@
         let currentPlatform = ''; // set via ?platform= deep link from the nav menu
         let currentSort = 'popular';
 
-        // Popular = most viewed first when view counts exist (fetched from the
-        // counter worker, see VIEWS_API below); with no counts yet it falls back
+        // Popular = most viewed first when view counts exist (read from
+        // views.json in this repo — GitHub is the source of truth); with no
+        // counts yet it falls back
         // to highest-rated-first so the tab is never worse than before. Unrated
         // titles and uncounted slugs sink, ties keep catalog order (stable sort).
         // New = catalog order as scraped. Ratings = highest rating first on the
@@ -484,35 +483,43 @@
             (b.rating || 0) - (a.rating || 0) ||
             (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
 
+        // ---- click counting (v5.12) ----------------------------------------
+        // Tab-open counting is handled by counter.js (loaded above, same
+        // folder): every tab open — the first one on page load, later clicks,
+        // and deep links like ?sort=new — is batched for the visit and sent
+        // to GitHub as ONE dispatch event; the views.yml Action in the
+        // aistream-views repo applies it to tab-views.json and commits. No
+        // worker, no third-party service. Drama views are counted the same
+        // way by watch.html into views.json, which the display block below
+        // reads for Popular/Ratings ordering.
+
         // ---- view counts (Popular tab) ----
-        // VIEWS_API: base URL of the view-counter worker (views-worker.js).
-        // Deploy that worker, bind a KV namespace as VIEWS, then paste its URL
-        // here AND into watch.html. Leave '' to keep Popular on the
-        // rating-based order (view counts play no role).
-        const VIEWS_API = 'https://viewscounter.webmasterjamezzz13.workers.dev';
+        // v5.12 — counts live in the aistream-views data repo (applied there
+        // by the views.yml Action). The display needs NO token: it reads the
+        // repo's public raw URL (CORS-open, cached ~5 min by GitHub's CDN,
+        // cache-busted per page load) and falls back to the local views.json
+        // copy so the chips never disappear.
+        const VIEWS_FILE = 'views.json';
+        const VIEWS_RAW = 'https://raw.githubusercontent.com/cpa1313/aistream-views/main/views.json?cb=';
         let viewCounts = {};    // slug -> view count
         let viewsPromise = null;
         function loadViews() {
-            if (!VIEWS_API || viewsPromise) return viewsPromise || Promise.resolve({});
-            // Live counts from the counter worker. If it cannot answer (quota,
-            // deploy hiccup, outage), fall back to the static views.json
-            // snapshot committed with the repo, so Popular still orders by
-            // views and the Popular/New/Ratings cards keep their views chip.
-            // Live values win over the snapshot for every slug it has.
-            const seedP = fetch('views.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
-            viewsPromise = Promise.all([
-                fetch(VIEWS_API + '/views').then(r => r.ok ? r.json() : {}).catch(() => ({})),
-                seedP
-            ]).then(([live, seed]) => {
-                // a usable map is an object of slug->count; the worker's error
-                // shape ({ok:false,...}) must never be mistaken for one
-                const usable = m => m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
-                viewCounts = usable(live) ? Object.assign({}, usable(seed) ? seed : {}, live)
-                          : (usable(seed) ? seed : {});
-                // Ratings uses the counts too (tie-breaks + views chip):
-                if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
-                return viewCounts;
-            });
+            if (viewsPromise) return viewsPromise;
+            const grab = (VIEWS_RAW
+                ? fetch(VIEWS_RAW + Date.now())
+                    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                    .catch(() => fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}))
+                : fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}))
+                .catch(() => ({}));
+            viewsPromise = grab.then(m => {
+                    // a usable map is an object of slug->count; an error shape
+                    // ({ok:false,...}) must never be mistaken for one
+                    const usable = m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
+                    viewCounts = usable ? m : {};
+                    // Ratings uses the counts too (tie-breaks + views chip):
+                    if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
+                    return viewCounts;
+                });
             return viewsPromise;
         }
         const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
@@ -526,6 +533,7 @@
         function setSort(s) {
             if (!SORT_LABELS[s]) return;
             currentSort = s;
+            if (window.siteCounter) window.siteCounter.countTab(s);   // v5.12 — one count per tab open, no IP dedup
             currentPage = 1;
             const url = new URL(location.href);
             if (s === 'popular') { url.searchParams.delete('sort'); } else { url.searchParams.set('sort', s); }
@@ -787,6 +795,10 @@
             });
             buildGenreBar();
             renderHome();
+            // v5.12 — count the tab the visitor actually opened on arrival
+            // (default Popular, or a deep link like ?sort=new). setSort only
+            // fires on later clicks, so the first tab open is counted here.
+            if (window.siteCounter) window.siteCounter.countTab(currentSort);
             loadViews(); // Popular switches to most-viewed once counts arrive
 
             // Mobile only: re-parent the genre bar below the page navigation
