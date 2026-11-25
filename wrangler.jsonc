@@ -16,7 +16,7 @@
   //   -> Add (type: Secret) — for Production (and Preview if used).
   "name": "aistream",
   "compatibility_date": "2026-11-01",
-  "main": "api-view.js",
+  "main": "api_view.js",
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
