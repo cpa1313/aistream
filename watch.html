@@ -364,7 +364,7 @@
         // Resolved episode sources: sources[mirrorIndex][episodeIndex] -> m3u8 URL
         let sources = [];
         let activeMirror = 0;
-        let workerRetried = false;   // v5.8.1 — one worker-failover retry per episode start
+        let workerFlips = 0;        // v5.16 — worker failovers used for this episode start (multi-flip, capped by pool size)
 
         // ---- click counting (v5.13 — Firebase, no token) -------------------
         // One count per EPISODE START, not per watch-page load: initial play,
@@ -410,15 +410,19 @@
            worker only adds real capacity when it is deployed on a DIFFERENT
            free account. Playback STARTS on the first entry (priority) and
            flips to the next entry when the current one fails (429 /
-           unreachable); the flip is sticky for the browser session. One
-           failover retry per episode start — see workerRetried below. */
+           unreachable); the flip is sticky for the browser session.
+           v5.16 — drained workers no longer cost the viewer a refresh: a
+           preflight (ensureWorkerAlive below) pings the worker BEFORE the
+           video starts and silently skips past any that answer 429/1027,
+           and the in-playback failover now walks the whole pool instead of
+           a single retry (workerFlips below). */
         const PROXY_WORKERS = [
-            'https://proxy7.zzzemaj13.workers.dev',          // proxy7 — PRIORITY (sixth account, fresh 100k/day pool, deployed 2026-11-24 ~12:40 UTC)
-            'https://proxy6.pinayfetishx1.workers.dev',      // second — fifth account (carrying load since ~09:55 UTC)
-            'https://proxy5.webmasterjamez13.workers.dev',   // third — fourth account (healthy, in the rotation)
-            'https://proxy4.webmasterjamezzz.workers.dev',   // fourth — third account (drained ~08:00 UTC, recovers at next 00:00 reset)
-            'https://proxy2.webmasterjamezzz13.workers.dev', // fifth — first account (drained, recovers at next 00:00 reset)
-            'https://long-snow-3e4b.cpagrid2.workers.dev',   // sixth — second account (drained ~04:30 UTC, recovers at next 00:00 reset)
+            'https://proxy4.webmasterjamezzz.workers.dev',   // proxy4 — PRIORITY (verified alive 2026-11-26)
+            'https://proxy2.webmasterjamezzz13.workers.dev', // second (verified alive 2026-11-26)
+            'https://long-snow-3e4b.cpagrid2.workers.dev',   // third (verified alive 2026-11-26)
+            'https://proxy7.zzzemaj13.workers.dev',          // fourth — drained 2026-11-26 (429/1027, recovers at 00:00 UTC)
+            'https://proxy6.pinayfetishx1.workers.dev',      // fifth — drained 2026-11-26 (429/1027, recovers at 00:00 UTC)
+            'https://proxy5.webmasterjamez13.workers.dev',   // sixth — drained 2026-11-26 (429/1027, recovers at 00:00 UTC)
             // Paste more workers from other free accounts here the same way.
         ];
         let _curWorker = -1;
@@ -440,6 +444,38 @@
             return true;
         }
         const segmentProxyBase = () => currentWorker() ? currentWorker() + '/?u=' : '';
+
+        /* v5.16 — worker preflight. A drained worker answers 429 (Error 1027)
+           instead of proxying, so we can detect it cheaply: ping the worker
+           root BEFORE the episode starts and skip past drained/unreachable
+           entries instead of burning the viewer-visible failover and forcing
+           a manual refresh. The pass result is cached for 60s so mirror
+           retries inside the same episode don't re-ping. If every worker
+           fails the ping we still play via the current one and the normal
+           error UX applies. */
+        let workerCheckOkUntil = 0;
+        async function workerAlive() {
+            const w = currentWorker();
+            if (!w) return true;                       // no proxy configured — nothing to check
+            try {
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 5000);
+                const r = await fetch(w + '/', { cache: 'no-store', signal: ctrl.signal });
+                clearTimeout(t);
+                return r.status !== 429;               // 429 = free-plan quota drained (Error 1027)
+            } catch { return false; }                  // unreachable — treat as drained
+        }
+        async function ensureWorkerAlive() {
+            if (Date.now() < workerCheckOkUntil) return;   // recently verified alive
+            if (!segmentProxyBase()) return;
+            for (let i = 0; i < PROXY_WORKERS.length; i++) {
+                if (await workerAlive()) {
+                    workerCheckOkUntil = Date.now() + 60000;
+                    return;
+                }
+                if (!flipWorker()) return;             // only one worker configured
+            }
+        }
         // v5.5.1 — the *short.com family randomly 403s ~50-70% of direct
         // requests (fatal for hls.js). Routing them through proxy2 /?u= lets
         // the worker retry server-side (8 attempts) and rewrite playlists.
@@ -709,6 +745,15 @@
             genresContainer.innerHTML = genreList.map(g => `<a class="genre-tag" href="index.html?genre=${encodeURIComponent(g)}">${g}</a>`).join('');
             genresContainer.style.display = genreList.length ? '' : 'none';
 
+            // v5.16 — dramadunyam titles build /dun fresh-link resolver URLs
+            // from the current worker inside resolveSources, so verify a
+            // worker is alive BEFORE they resolve and skip drained ones.
+            // Other sources only touch workers at play time, where the
+            // playCurrent preflight below covers them. Cached for 60s.
+            if (drama.source === 'dramadunyam') {
+                await ensureWorkerAlive();
+            }
+
             // Resolve the real episode URLs first (inline or from eps chunk file)
             showMsg('Loading episodes...');
             let loadError = false;
@@ -780,7 +825,7 @@
         function loadVideo(ep) {
             currentEpisode = parseInt(ep) || 1;
             activeMirror = 0;
-            workerRetried = false;   // v5.8.1 — fresh failover budget per episode
+            workerFlips = 0;   // fresh failover budget per episode
             const available = sources.length ? sources[0].length : 0;
             if (currentEpisode > available) currentEpisode = available;
             if (available && currentEpisode >= 1) countView();  // 1 view = 1 episode started
@@ -1018,7 +1063,7 @@
             }, { once: true });
         }
 
-        function playCurrent() {
+        async function playCurrent() {
             const video = document.getElementById('videoPlayer');
             const candidates = candidatesFor(currentEpisode);
 
@@ -1033,7 +1078,31 @@
             video.load();
             destroyHls();
 
-            const url = candidates[activeMirror];
+            let url = candidates[activeMirror];
+
+            // v5.16 — if the preflight/failover flipped to another worker
+            // after sources resolved, /dun resolver URLs baked earlier still
+            // point at the old worker — rebuild the current candidate onto
+            // the live worker so the multi-flip actually helps dun titles.
+            if (url.includes('/dun/') && currentWorker()) {
+                try {
+                    const u = new URL(url);
+                    const cw = new URL(currentWorker());
+                    if (u.hostname !== cw.hostname) {
+                        u.hostname = cw.hostname;
+                        candidates[activeMirror] = u.href;
+                        url = u.href;
+                    }
+                } catch {}
+            }
+
+            // v5.16 — if this episode depends on a proxy worker (proxy-host
+            // CDNs or the /dun fresh-link resolver), verify the current
+            // worker still has quota BEFORE the viewer sees a broken player;
+            // silently skip past drained ones (see ensureWorkerAlive).
+            if (url.includes('/dun/') || proxiedUrl(url) !== url) {
+                await ensureWorkerAlive();
+            }
 
             // v5.14 — Streamable link? Resolve it to a signed MP4 and play it
             // natively (see the resolution block above): mirror fallback,
@@ -1115,9 +1184,13 @@
                     // dead worker (quota 429 / outage) must not kill playback
                     // on single-mirror titles, for which the mirror-advance
                     // branch below never runs. Flip to the next worker and
-                    // retry the SAME mirror once before touching mirrors.
-                    if (!workerRetried && PROXY_WORKERS.length > 1 && flipWorker()) {
-                        workerRetried = true;
+                    // retry the SAME mirror before touching mirrors.
+                    // v5.16 — the preflight above should have already skipped
+                    // drained workers, so this is belt-and-braces: walk the
+                    // WHOLE pool (one flip per fatal error) instead of giving
+                    // up after a single retry.
+                    if (workerFlips < PROXY_WORKERS.length - 1 && PROXY_WORKERS.length > 1 && flipWorker()) {
+                        workerFlips++;
                         showMsg('Playback worker failed — switching to backup worker...');
                         playCurrent();
                         return;
@@ -1145,8 +1218,9 @@
                 // listener is re-armed for the retry attempt so a second
                 // failure can still advance mirrors.
                 const nativeFail = () => {
-                    if (!workerRetried && PROXY_WORKERS.length > 1 && flipWorker()) {
-                        workerRetried = true;
+                    // v5.16 — same multi-flip budget as the hls.js path.
+                    if (workerFlips < PROXY_WORKERS.length - 1 && PROXY_WORKERS.length > 1 && flipWorker()) {
+                        workerFlips++;
                         video.addEventListener('error', nativeFail, { once: true });
                         video.src = proxiedUrl(url);
                         return;
