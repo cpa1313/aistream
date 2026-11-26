@@ -70,6 +70,22 @@
 
         .video-wrapper { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.6); aspect-ratio: 16/9; position: relative; margin-bottom: 1.5rem; }
         video { width: 100%; height: 100%; display: block; background: #000; }
+        /* v5.15 — big center play overlay. Touch browsers draw their own big
+           play icon on a paused <video>; desktop Chrome only shows the tiny
+           control-bar arrow, which is easy to miss. So we draw our own
+           overlay whenever playback is paused — same look as the mobile icon
+           viewers already know. Real touch devices keep only their native
+           icon (rule below hides ours there); hidden while an embed mirror
+           is up (that player brings its own controls). */
+        .big-play { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: clamp(60px, 9vw, 92px); height: clamp(60px, 9vw, 92px); border-radius: 50%; background: rgba(0, 0, 0, 0.55); border: 2px solid rgba(255, 255, 255, 0.85); color: #fff; cursor: pointer; z-index: 6; align-items: center; justify-content: center; padding: 0; transition: background 0.2s, transform 0.2s; }
+        .big-play svg { width: 46%; height: 46%; fill: #fff; margin-left: 7%; pointer-events: none; }
+        .big-play:hover { background: rgba(0, 0, 0, 0.75); transform: translate(-50%, -50%) scale(1.06); }
+        .video-wrapper.paused .big-play { display: flex; }
+        /* phones/tablets draw their own native paused-video icon — don't
+           double up (desktop browsers never match this rule) */
+        @media (hover: none) and (pointer: coarse) {
+            .video-wrapper.paused .big-play { display: none; }
+        }
         /* Upload-hosted iframe embeds (Streamable etc.) fill the same 16/9 box
            as the native player; JS toggles which of the two is visible. */
         #embedPlayer { width: 100%; height: 100%; border: 0; background: #000; display: none; }
@@ -272,6 +288,11 @@
                 <div class="video-wrapper">
                     <div class="loading" id="loadingText">Loading video...</div>
                     <video id="videoPlayer" controls playsinline></video>
+                    <!-- v5.15 — big center play button for mouse/desktop
+                         viewers (mobile keeps the browser's own icon). -->
+                    <button class="big-play" id="bigPlay" aria-label="Play episode" type="button">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
                     <iframe id="embedPlayer" title="Episode player" scrolling="no"
                             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                             allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
@@ -948,6 +969,25 @@
         let currentSourceStreamable = false;
         const videoPlayerEl = document.getElementById('videoPlayer');
         videoPlayerEl.addEventListener('playing', () => { playbackStarted = true; });
+
+        /* v5.15 — big center play overlay (desktop). Visible whenever the
+           native player sits paused (before the first play, mid-pause, and
+           after 'ended'), hidden the moment playback runs. Clicking it is a
+           normal user-gesture play, so it also satisfies the Streamable
+           no-autoplay gate by hand. Mobile/touch devices are untouched:
+           CSS only reveals the overlay on (hover:hover)+(pointer:fine), and
+           those browsers keep drawing their own paused-video icon. */
+        const bigPlayBtn = document.getElementById('bigPlay');
+        function syncBigPlay() {
+            videoWrap.classList.toggle('paused', videoPlayerEl.paused || videoPlayerEl.ended);
+        }
+        ['play', 'playing', 'pause', 'ended'].forEach(ev => videoPlayerEl.addEventListener(ev, syncBigPlay));
+        bigPlayBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (videoPlayerEl.src || videoPlayerEl.currentSrc) videoPlayerEl.play().catch(() => {});
+            else playCurrent();   // nothing loaded yet — kick the normal path
+        });
+        syncBigPlay();
         function autoStart(video) {
             if (currentSourceStreamable && !playbackStarted) return;
             video.play().catch(() => {});
