@@ -49,7 +49,7 @@
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
     <script src="data.js"></script>
-    <script src="counter.js?v=1"></script>
+    <script src="counter.js?v=2"></script>
     <style>
         :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -345,7 +345,7 @@
         let activeMirror = 0;
         let workerRetried = false;   // v5.8.1 — one worker-failover retry per episode start
 
-        // ---- click counting (v5.12 — GitHub Actions, no worker) -----------
+        // ---- click counting (v5.13 — Firebase, no token) -------------------
         // One count per EPISODE START, not per watch-page load: initial play,
         // prev/next, episode grid/select and auto-advance all funnel through
         // loadVideo(), so every episode a viewer actually plays counts as one
@@ -353,10 +353,10 @@
         // directly and never pass through loadVideo(), so one episode start
         // counts exactly once.
         // The counting machinery lives in counter.js (loaded above, same
-        // folder): it batches this visit's clicks and hands them to GitHub as
-        // ONE dispatch event; the views.yml Action in the aistream-views repo
-        // applies them to views.json and commits. No worker, no third-party
-        // service — GitHub and this site's own JavaScript are the only actors.
+        // folder): it batches this visit's clicks and sends them ONCE to a
+        // Firebase Realtime Database over its REST API (no token, no GitHub,
+        // no worker — the database rules only allow "+1" increments, so this
+        // file holds no secret that could touch the site or the counts).
         function countView() {
             if (!currentDrama || !currentDrama.slug) return;
             if (window.siteCounter) window.siteCounter.countView(currentDrama.slug);
@@ -768,13 +768,22 @@
         }
 
         // ==========================================
-        // UPLOAD-HOSTED EMBEDS (Streamable etc.)
-        // Episodes you upload yourself can point at embed pages instead of
-        // HLS/MP4 URLs, e.g. https://streamable.com/e/9t47ph?loop=0 (the
-        // /e/<id> form is Streamable's official iframe player). These play in
-        // an <iframe> that shares the player box with the native <video>;
-        // exactly one of the two is visible at any moment. Plain Streamable
-        // watch URLs (streamable.com/<id>) are normalized to /e/<id> embeds.
+        // UPLOAD-HOSTED SOURCES (Streamable etc.)
+        // Episodes you upload yourself can point at Streamable links, e.g.
+        // https://streamable.com/e/9t47ph?loop=0 (the /e/<id> form is
+        // Streamable's official embed; plain watch URLs streamable.com/<id>
+        // and /o/<id> normalize to it).
+        //
+        // v5.14 — Streamable plays NATIVELY, not in an iframe: Streamable's
+        // player posts no events to the parent page, so an embed can never
+        // tell us when the episode ends (no auto-advance), and nothing can
+        // start it from outside. Instead we resolve the link to its signed
+        // MP4 (ajax.streamable.com is CORS-open and hands out CDN links that
+        // stay valid ~3 days) and feed OUR <video>. The episode then behaves
+        // like every other native source: no autoplay on the first visit,
+        // tap-to-play, and 'ended' auto-advances to the next episode. The
+        // iframe embed below stays as the fallback for when the resolver
+        // fails (video removed, endpoint down).
         // ==========================================
         function embedHost(url) {
             try { return (new URL(url, location.href).hostname || '').replace(/^www\./, ''); }
@@ -794,22 +803,61 @@
                     const u = new URL(url, location.href);
                     const m = u.pathname.match(/^\/(?:e|o)\/([A-Za-z0-9]+)\/?$/)
                            || u.pathname.match(/^\/([A-Za-z0-9]+)\/?$/);
-                    if (m) {
-                        // v5.12 — autoplay like every other source: the native
-                        // paths call video.play(), so the embed path asks
-                        // Streamable's player to start on load too. The iframe
-                        // already carries allow="autoplay", and with
-                        // ?autoplay=1 the /e/ player renders <video autoplay>
-                        // and force-plays (verified against the live embed).
-                        // Existing params (?loop=0 etc.) are kept.
-                        u.searchParams.set('autoplay', '1');
-                        return `https://streamable.com/e/${m[1]}?${u.searchParams}`;
-                    }
+                    if (m) return `https://streamable.com/e/${m[1]}${u.search}`;  // keeps ?loop=0 etc.
                 } catch {}
                 return url;
             }
             return url;
         }
+
+        // --- v5.14: resolve a Streamable link to a playable MP4 --------------
+        function isStreamableUrl(url) {
+            return embedHost(url) === 'streamable.com';
+        }
+        function streamableId(url) {
+            try {
+                const p = new URL(url, location.href).pathname;
+                const m = p.match(/^\/(?:e|o)\/([A-Za-z0-9]+)\/?$/) || p.match(/^\/([A-Za-z0-9]+)\/?$/);
+                return m ? m[1] : '';
+            } catch { return ''; }
+        }
+        let streamableResolves = {};   // in-flight fetches, deduped per id
+        function resolveStreamable(url) {
+            const id = streamableId(url);
+            if (!id) return Promise.resolve(null);
+            // The CDN links are signed with an expiry (~3 days out); keep the
+            // resolved one in sessionStorage and only re-resolve when close
+            // to expiring, so revisits and mirror/episode switches within a
+            // tab never re-fetch.
+            try {
+                const c = JSON.parse(sessionStorage.getItem('streamableRes:' + id) || 'null');
+                if (c && c.u && c.exp > Date.now() + 60000) return Promise.resolve(c.u);
+            } catch {}
+            if (streamableResolves[id]) return streamableResolves[id];
+            streamableResolves[id] = fetch('https://ajax.streamable.com/videos/' + id)
+                .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                .then(d => {
+                    const files = (d && d.files) || {};
+                    // Small screens get the same lighter encode Streamable's
+                    // own player serves them; everything else the standard MP4.
+                    const small = window.matchMedia && matchMedia('(max-width: 640px)').matches;
+                    const f = (small && files['mp4-mobile'] && files['mp4-mobile'].url) ||
+                              (files.mp4 && files.mp4.url) ||
+                              (files['mp4-mobile'] && files['mp4-mobile'].url) || '';
+                    if (!f) return null;
+                    const u = new URL(f, 'https://streamable.com/');   // //cdn... -> https://cdn...
+                    const expM = u.href.match(/Expires=(\d+)/);
+                    try {
+                        sessionStorage.setItem('streamableRes:' + id,
+                            JSON.stringify({ u: u.href, exp: expM ? Number(expM[1]) * 1000 : Date.now() + 3600000 }));
+                    } catch {}
+                    return u.href;
+                })
+                .catch(() => null)
+                .then(r => { delete streamableResolves[id]; return r; });
+            return streamableResolves[id];
+        }
+
         let embedLoadTimer = null;
         function destroyEmbed() {
             // Swap back to the native <video> and stop any embed that is
@@ -890,6 +938,21 @@
             }
         });
 
+        /* v5.14 — autoplay policy for Streamable sources: NO autoplay when a
+           watch page is first opened (the viewer taps play, exactly like the
+           old embed behaved). Once anything has played this visit — a manual
+           tap or the auto-advance after 'ended' — playback continues by
+           itself for every following episode. All other sources keep the
+           existing behavior (start playing as soon as they load). */
+        let playbackStarted = false;
+        let currentSourceStreamable = false;
+        const videoPlayerEl = document.getElementById('videoPlayer');
+        videoPlayerEl.addEventListener('playing', () => { playbackStarted = true; });
+        function autoStart(video) {
+            if (currentSourceStreamable && !playbackStarted) return;
+            video.play().catch(() => {});
+        }
+
         function playNative(url, candidates) {
             // Native <video> playback (progressive MP4). One attempt per
             // candidate: on error, advance to the next mirror exactly like
@@ -911,7 +974,7 @@
             video.src = proxiedUrl(url);
             video.addEventListener('loadedmetadata', () => {
                 hideMsg();
-                video.play().catch(() => {});
+                autoStart(video);
             }, { once: true });
         }
 
@@ -932,18 +995,46 @@
 
             const url = candidates[activeMirror];
 
-            // Upload-hosted embed (Streamable etc.)? Swap the native player
-            // for the embed iframe. Mirror fallback cannot be auto-detected
-            // across iframes, so the embed is the last stop for this episode.
+            // v5.14 — Streamable link? Resolve it to a signed MP4 and play it
+            // natively (see the resolution block above): mirror fallback,
+            // tap-to-play and 'ended' auto-advance then all work exactly
+            // like every other native source. If the resolver fails, fall
+            // back to the embed iframe (a cross-origin player reports
+            // nothing, so there is no auto-advance there).
+            if (isStreamableUrl(url)) {
+                currentSourceStreamable = true;
+                destroyEmbed();   // restore the native <video> if an embed was up
+                resolveStreamable(url).then(mp4 => {
+                    if (mp4) startNative(mp4);
+                    else playEmbed(url);
+                });
+                return;
+            }
+            currentSourceStreamable = false;
+
+            // Any other upload-hosted embed (YouTube/Vimeo/Dailymotion
+            // forms)? Swap the native player for the embed iframe. Mirror
+            // fallback cannot be auto-detected across iframes, so the embed
+            // is the last stop for this episode.
             if (isEmbedUrl(url)) {
                 playEmbed(url);
                 return;
             }
             destroyEmbed();   // restore the native <video> when leaving an embed source
+            startNative(url);
+        }
+
+        // v5.14 — the native branches of playCurrent, split out so that
+        // resolved Streamable links re-enter the same mp4/hls pipeline
+        // (and its mirror fallback) unchanged.
+        function startNative(url) {
+            const video = document.getElementById('videoPlayer');
+            const candidates = candidatesFor(currentEpisode);
 
             if (/\.mp4($|\?)/.test(url)) {
-                // Progressive MP4 (e.g. DramaBox CDN links) — play natively,
-                // no hls.js. Same mirror-fallback as the native HLS path.
+                // Progressive MP4 (DramaBox CDN links and resolved Streamable
+                // links) — play natively, no hls.js. Same mirror-fallback as
+                // the native HLS path.
                 playNative(url, candidates);
                 return;
             }
@@ -961,7 +1052,7 @@
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     hideMsg();
-                    video.play().catch(() => {});
+                    autoStart(video);
                 });
                 hls.on(Hls.Events.FRAG_LOADED, () => hideMsg());
                 hls.on(Hls.Events.ERROR, (event, data) => {
@@ -1031,7 +1122,7 @@
                 video.src = proxiedUrl(url);
                 video.addEventListener('loadedmetadata', () => {
                     hideMsg();
-                    video.play().catch(() => {});
+                    autoStart(video);
                 }, { once: true });
             } else {
                 showMsg('❌ HLS is not supported in this browser.', '#ff4444');
@@ -1048,7 +1139,10 @@
             loadVideo(parseInt(ep));
         }
 
-        // Auto-play next episode when the current one finishes
+        // Auto-play next episode when the current one finishes. v5.14 — this
+        // covers Streamable sources too now: they play natively (resolved
+        // MP4), so their 'ended' reaches this listener like every other
+        // source, and the next episode starts through autoStart() above.
         document.getElementById('videoPlayer').addEventListener('ended', () => {
             const available = sources.length ? sources[0].length : 0;
             if (currentEpisode < available) {
