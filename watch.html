@@ -794,7 +794,17 @@
                     const u = new URL(url, location.href);
                     const m = u.pathname.match(/^\/(?:e|o)\/([A-Za-z0-9]+)\/?$/)
                            || u.pathname.match(/^\/([A-Za-z0-9]+)\/?$/);
-                    if (m) return `https://streamable.com/e/${m[1]}${u.search}`;  // keeps ?loop=0 etc.
+                    if (m) {
+                        // v5.12 — autoplay like every other source: the native
+                        // paths call video.play(), so the embed path asks
+                        // Streamable's player to start on load too. The iframe
+                        // already carries allow="autoplay", and with
+                        // ?autoplay=1 the /e/ player renders <video autoplay>
+                        // and force-plays (verified against the live embed).
+                        // Existing params (?loop=0 etc.) are kept.
+                        u.searchParams.set('autoplay', '1');
+                        return `https://streamable.com/e/${m[1]}?${u.searchParams}`;
+                    }
                 } catch {}
                 return url;
             }
