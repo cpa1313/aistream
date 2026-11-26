@@ -51,7 +51,7 @@ window.DB_DRAMAS_P3.push(
   "https://streamable.com/ejnm2n?loop=0",
   "https://streamable.com/e9741u?loop=0",
   "https://streamable.com/wzwaeh?loop=0",
-  "https://canbari.com/share/direct/e837847d-3616-42a9-a71f-704adda6de69.ts",
+  "https://canbari.com/share/direct/82c1ac70-1b53-4e98-83bc-63df8556a621.mp4",
   "https://streamable.com/0gswey?loop=0",
   "https://streamable.com/1yt4kk?loop=0",
   "?loop=0",
