@@ -64,7 +64,7 @@
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
     <script src="data.js"></script>
-    <script src="counter.js?v=2"></script>
+    <script src="counter.js?v=3"></script>
     <style>
         :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -467,8 +467,8 @@
         let currentPlatform = ''; // set via ?platform= deep link from the nav menu
         let currentSort = 'popular';
 
-        // Popular = most viewed first when view counts exist (read from
-        // views.json in this repo — GitHub is the source of truth); with no
+        // Popular = most viewed first when view counts exist (read live from
+        // the Firebase Realtime Database — see the counter block below); with no
         // counts yet it falls back
         // to highest-rated-first so the tab is never worse than before. Unrated
         // titles and uncounted slugs sink, ties keep catalog order (stable sort).
@@ -493,12 +493,15 @@
         // Ratings ordering.
 
         // ---- view counts (Popular tab) ----
-        // v5.13 — counts live in a Firebase Realtime Database (see counter.js
-        // and VIEWS-SETUP.md). The display needs NO token: it reads the whole
-        // counter map in ONE REST GET and caches it in localStorage for 6h —
-        // most visits therefore cost Firebase nothing. If Firebase is
-        // unreachable, the last cache (then the local views.json copy) fills
-        // the chips, so they never disappear.
+        // v5.14 — counts live in a Firebase Realtime Database (see counter.js).
+        // The display needs NO token: it reads the whole counter map in ONE
+        // REST GET on EVERY page load. (v5.13 trusted a 6-hour localStorage
+        // cache and skipped the network while it was fresh — chips could sit
+        // on stale numbers all day, so a click never changed anything you
+        // could see. Now the cache is only an instant paint + offline
+        // fallback; Firebase always wins.) If Firebase is unreachable, the
+        // last cache (then the local views.json copy) fills the chips, so
+        // they never disappear.
         const VIEWS_FILE = 'views.json';
         const VIEWS_CACHE_KEY = 'viewsCacheV2';
         const VIEWS_CACHE_TTL = 6 * 60 * 60 * 1000;
@@ -510,41 +513,54 @@
                 return (c && c.d && typeof c.d === 'object') ? c : null;
             } catch (e) { return null; }
         }
+        const usableMap = m => m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
         function loadViews() {
             if (viewsPromise) return viewsPromise;
             const DB = (window.siteCounter && window.siteCounter.dbUrl) || '';
             const cached = readViewsCache();
-            const usable = m => m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
             let grab;
-            if (cached && Date.now() - cached.t < VIEWS_CACHE_TTL) {
-                grab = Promise.resolve(cached.d);          // fresh cache: zero network
-            } else if (DB) {
+            if (DB) {
                 grab = fetch(DB + '/views.json')
                     .then(r => r.ok ? r.json() : Promise.reject(r.status))
                     .then(m => {
-                        if (usable(m)) {
+                        if (usableMap(m)) {
                             try { localStorage.setItem(VIEWS_CACHE_KEY, JSON.stringify({ t: Date.now(), d: m })); } catch (e) {}
                             return m;
                         }
                         throw 0;   // unusable shape — fall through to the backups
                     })
                     .catch(() => {
-                        const stale = readViewsCache();    // Firebase unreachable: last cache...
-                        if (stale) return stale.d;
+                        const stale = usableMap(cached && cached.d) ? cached.d : null;   // Firebase unreachable: last cache...
+                        if (stale) return stale;
                         return fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {})  // ...then the local copy
                             .catch(() => ({}));
                     });
             } else {
                 grab = fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}).catch(() => ({}));
             }
+            // Instant paint from the last cache so chips are visible at once;
+            // the fresh Firebase map re-renders over it when it lands.
+            if (usableMap(cached && cached.d)) {
+                viewCounts = cached.d;
+                if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
+            }
             viewsPromise = grab.then(m => {
-                    viewCounts = usable(m) ? m : viewCounts;   // a bad map must never erase good chips
+                    viewCounts = usableMap(m) ? m : viewCounts;   // a bad map must never erase good chips
                     // Ratings uses the counts too (tie-breaks + views chip):
                     if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
                     return viewCounts;
                 });
             return viewsPromise;
         }
+        // v5.14 — counter.js reports what actually landed after each flush;
+        // tick the chips up right away so a click is visible on this page
+        // (the next real fetch from Firebase supersedes these local numbers).
+        if (window.siteCounter) window.siteCounter.onFlushed = function (sent) {
+            let touched = false;
+            const v = (sent && sent.views) || {};
+            for (const k in v) { viewCounts[k] = (viewCounts[k] || 0) + (Number(v[k]) || 0); touched = true; }
+            if (touched && (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new')) renderHome();
+        };
         const byViews = (a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
         // 42 -> "42", 1234 -> "1.2K", 1234567 -> "1.2M" (for the badges)
         function fmtViews(n) {

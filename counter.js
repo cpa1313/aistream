@@ -1,4 +1,4 @@
-/* counter.js — site click counter (v5.13, Firebase Realtime Database).
+/* counter.js — site click counter (v5.14, Firebase Realtime Database).
    No GitHub, no token, no Actions: each count is a tiny number in a
    Firebase Realtime Database, updated over its plain REST API from the
    page. The database rules (firebase-rules.json / VIEWS-SETUP.md) allow
@@ -137,6 +137,9 @@
                 }
             }
             save();
+            // v5.14 — tell the page what actually landed (index.html uses
+            // this to tick the chips up without waiting for the next read).
+            try { if (window.siteCounter && window.siteCounter.onFlushed) window.siteCounter.onFlushed(sent); } catch (e) {}
         });
     }
 
@@ -152,6 +155,7 @@
         countView: countView,
         countTab: countTab,
         flushNow: flush,
+        onFlushed: null,          // v5.14 — page hook: called with the sent batch after each flush
         dbUrl: DB_URL             // index.html reads this for the display fetch
     };
 })();
