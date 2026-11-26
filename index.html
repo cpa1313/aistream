@@ -64,7 +64,7 @@
     <script src="data-part-2.js"></script>
     <script src="data-part-3.js"></script>
     <script src="data.js"></script>
-    <script src="counter.js?v=1"></script>
+    <script src="counter.js?v=2"></script>
     <style>
         :root { --bg-primary: #121212; --bg-secondary: #1e1e1e; --accent: #ff6b35; --text-primary: #ffffff; --text-secondary: #b3b3b3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -483,39 +483,62 @@
             (b.rating || 0) - (a.rating || 0) ||
             (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0);
 
-        // ---- click counting (v5.12) ----------------------------------------
+        // ---- click counting (v5.13) ----------------------------------------
         // Tab-open counting is handled by counter.js (loaded above, same
         // folder): every tab open — the first one on page load, later clicks,
         // and deep links like ?sort=new — is batched for the visit and sent
-        // to GitHub as ONE dispatch event; the views.yml Action in the
-        // aistream-views repo applies it to tab-views.json and commits. No
-        // worker, no third-party service. Drama views are counted the same
-        // way by watch.html into views.json, which the display block below
-        // reads for Popular/Ratings ordering.
+        // ONCE to a Firebase Realtime Database over its REST API (no token,
+        // no GitHub, no worker). Drama views are counted the same way by
+        // watch.html, which the display block below reads for Popular/
+        // Ratings ordering.
 
         // ---- view counts (Popular tab) ----
-        // v5.12 — counts live in the aistream-views data repo (applied there
-        // by the views.yml Action). The display needs NO token: it reads the
-        // repo's public raw URL (CORS-open, cached ~5 min by GitHub's CDN,
-        // cache-busted per page load) and falls back to the local views.json
-        // copy so the chips never disappear.
+        // v5.13 — counts live in a Firebase Realtime Database (see counter.js
+        // and VIEWS-SETUP.md). The display needs NO token: it reads the whole
+        // counter map in ONE REST GET and caches it in localStorage for 6h —
+        // most visits therefore cost Firebase nothing. If Firebase is
+        // unreachable, the last cache (then the local views.json copy) fills
+        // the chips, so they never disappear.
         const VIEWS_FILE = 'views.json';
-        const VIEWS_RAW = 'https://raw.githubusercontent.com/cpa1313/aistream-views/main/views.json?cb=';
+        const VIEWS_CACHE_KEY = 'viewsCacheV2';
+        const VIEWS_CACHE_TTL = 6 * 60 * 60 * 1000;
         let viewCounts = {};    // slug -> view count
         let viewsPromise = null;
+        function readViewsCache() {
+            try {
+                const c = JSON.parse(localStorage.getItem(VIEWS_CACHE_KEY) || 'null');
+                return (c && c.d && typeof c.d === 'object') ? c : null;
+            } catch (e) { return null; }
+        }
         function loadViews() {
             if (viewsPromise) return viewsPromise;
-            const grab = (VIEWS_RAW
-                ? fetch(VIEWS_RAW + Date.now())
+            const DB = (window.siteCounter && window.siteCounter.dbUrl) || '';
+            const cached = readViewsCache();
+            const usable = m => m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
+            let grab;
+            if (cached && Date.now() - cached.t < VIEWS_CACHE_TTL) {
+                grab = Promise.resolve(cached.d);          // fresh cache: zero network
+            } else if (DB) {
+                grab = fetch(DB + '/views.json')
                     .then(r => r.ok ? r.json() : Promise.reject(r.status))
-                    .catch(() => fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}))
-                : fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}))
-                .catch(() => ({}));
+                    .then(m => {
+                        if (usable(m)) {
+                            try { localStorage.setItem(VIEWS_CACHE_KEY, JSON.stringify({ t: Date.now(), d: m })); } catch (e) {}
+                            return m;
+                        }
+                        throw 0;   // unusable shape — fall through to the backups
+                    })
+                    .catch(() => {
+                        const stale = readViewsCache();    // Firebase unreachable: last cache...
+                        if (stale) return stale.d;
+                        return fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {})  // ...then the local copy
+                            .catch(() => ({}));
+                    });
+            } else {
+                grab = fetch(VIEWS_FILE).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+            }
             viewsPromise = grab.then(m => {
-                    // a usable map is an object of slug->count; an error shape
-                    // ({ok:false,...}) must never be mistaken for one
-                    const usable = m && typeof m === 'object' && !('ok' in m) && Object.keys(m).length > 0;
-                    viewCounts = usable ? m : {};
+                    viewCounts = usable(m) ? m : viewCounts;   // a bad map must never erase good chips
                     // Ratings uses the counts too (tie-breaks + views chip):
                     if (currentSort === 'popular' || currentSort === 'rankings' || currentSort === 'new') renderHome();
                     return viewCounts;
@@ -533,7 +556,7 @@
         function setSort(s) {
             if (!SORT_LABELS[s]) return;
             currentSort = s;
-            if (window.siteCounter) window.siteCounter.countTab(s);   // v5.12 — one count per tab open, no IP dedup
+            if (window.siteCounter) window.siteCounter.countTab(s);   // v5.13 — one count per tab open, no IP dedup
             currentPage = 1;
             const url = new URL(location.href);
             if (s === 'popular') { url.searchParams.delete('sort'); } else { url.searchParams.set('sort', s); }
@@ -795,7 +818,7 @@
             });
             buildGenreBar();
             renderHome();
-            // v5.12 — count the tab the visitor actually opened on arrival
+            // v5.13 — count the tab the visitor actually opened on arrival
             // (default Popular, or a deep link like ?sort=new). setSort only
             // fires on later clicks, so the first tab open is counted here.
             if (window.siteCounter) window.siteCounter.countTab(currentSort);
