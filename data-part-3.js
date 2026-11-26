@@ -125526,7 +125526,7 @@ window.DB_DRAMAS_P3.push(
  "episodes": 65,
  "cover": "https://dramadog.app/c/31802.webp",
  "description": "One wrong turn. Three naked shifters. One very unimpressed human. Nora shrugs at the dragon prince—so he… All 65 episodes free, no ads, no sign-up.",
- "about": "One wrong turn. Three naked shifters. One very unimpressed human. Nora shrugs at the dragon prince—so he… All 65 episodes free, no ads, no sign-up.",
+ "about": "One wrong turn. Three naked shifters. One very unimpressed human. Nora shrugs at the dragon prince—so he… All 65 episodes free, no ads, no sign-up..",
  "genres": [],
  "rating": null,
  "releaseDate": "",
