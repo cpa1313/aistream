@@ -116,6 +116,18 @@
         .episode-count { color: var(--accent); font-size: 0.9rem; }
 
         .episode-navigation { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+        /* v5.17 — Auto Next on/off switch. Default OFF: a finished episode
+           stops there and the viewer picks the next one themselves. Toggled
+           on, the next episode starts by itself (the old behavior). The
+           choice is remembered per browser in localStorage. */
+        .auto-next { display: inline-flex; align-items: center; gap: 0.5rem; margin-left: auto; cursor: pointer; user-select: none; -webkit-user-select: none; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; padding: 0.45rem 0; }
+        .auto-next input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .auto-next .switch { width: 40px; height: 22px; border-radius: 22px; background: #333; border: 1px solid #444; position: relative; transition: background 0.2s, border-color 0.2s; flex: 0 0 auto; }
+        .auto-next .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #c9c9c9; transition: transform 0.2s, background 0.2s; }
+        .auto-next input:checked + .switch { background: var(--accent); border-color: var(--accent); }
+        .auto-next input:checked + .switch::after { transform: translateX(18px); background: #fff; }
+        .auto-next input:focus-visible + .switch { outline: 2px solid #fff; outline-offset: 2px; }
+        .auto-next.on { color: var(--text-primary); }
         .nav-btn { padding: 0.75rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
         .nav-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
         .episode-select { flex: 1; padding: 0.75rem; background: var(--bg-primary); color: var(--text-primary); border: 1px solid #333; border-radius: 6px; font-size: 1rem; cursor: pointer; min-width: 150px; }
@@ -324,6 +336,9 @@
                         <button class="nav-btn" id="prevBtn" onclick="changeEpisode(-1)">⏮ Previous</button>
                         <select class="episode-select" id="episodeSelect" onchange="jumpToEpisode(this.value)"></select>
                         <button class="nav-btn" id="nextBtn" onclick="changeEpisode(1)">Next ⏭</button>
+                        <label class="auto-next" id="autoNextWrap" title="When on, the next episode starts by itself when one ends">
+                            <input type="checkbox" id="autoNextChk"> Auto Next <span class="switch" aria-hidden="true"></span>
+                        </label>
                     </div>
 
                     <div class="episode-grid" id="episodeGrid"></div>
@@ -1016,15 +1031,19 @@
         videoPlayerEl.addEventListener('playing', () => { playbackStarted = true; });
 
         /* v5.15 — big center play overlay (desktop). Visible whenever the
-           native player sits paused (before the first play, mid-pause, and
-           after 'ended'), hidden the moment playback runs. Clicking it is a
-           normal user-gesture play, so it also satisfies the Streamable
+           native player sits paused (before the first play, mid-pause),
+           hidden the moment playback runs. Clicking it is a normal
+           user-gesture play, so it also satisfies the Streamable
            no-autoplay gate by hand. Mobile/touch devices are untouched:
            CSS only reveals the overlay on (hover:hover)+(pointer:fine), and
-           those browsers keep drawing their own paused-video icon. */
+           those browsers keep drawing their own paused-video icon.
+           v5.17 — a FINISHED episode no longer shows it: with Auto Next
+           off the end frame stays clean (the small controls arrow still
+           replays), so nothing invites an accidental replay and the
+           viewer picks the next episode themselves. */
         const bigPlayBtn = document.getElementById('bigPlay');
         function syncBigPlay() {
-            videoWrap.classList.toggle('paused', videoPlayerEl.paused || videoPlayerEl.ended);
+            videoWrap.classList.toggle('paused', videoPlayerEl.paused && !videoPlayerEl.ended);
         }
         ['play', 'playing', 'pause', 'ended'].forEach(ev => videoPlayerEl.addEventListener(ev, syncBigPlay));
         bigPlayBtn.addEventListener('click', (e) => {
@@ -1253,11 +1272,27 @@
             loadVideo(parseInt(ep));
         }
 
-        // Auto-play next episode when the current one finishes. v5.14 — this
-        // covers Streamable sources too now: they play natively (resolved
-        // MP4), so their 'ended' reaches this listener like every other
-        // source, and the next episode starts through autoStart() above.
+        /* v5.17 — Auto Next switch. DEFAULT OFF: when an episode ends the
+           player stops on the end frame and the viewer clicks the next
+           episode themselves. Toggled on, the next episode loads and
+           starts by itself — the old auto-advance. The choice is kept in
+           localStorage per browser. Streamable sources behave exactly like
+           every other source in both modes (they play natively, so their
+           'ended' reaches this listener). */
+        const AUTO_NEXT_KEY = 'fsAutoNext';
+        let autoNext = false;
+        try { autoNext = localStorage.getItem(AUTO_NEXT_KEY) === '1'; } catch (e) {}
+        const autoNextChk = document.getElementById('autoNextChk');
+        autoNextChk.checked = autoNext;
+        document.getElementById('autoNextWrap').classList.toggle('on', autoNext);
+        autoNextChk.addEventListener('change', () => {
+            autoNext = autoNextChk.checked;
+            document.getElementById('autoNextWrap').classList.toggle('on', autoNext);
+            try { localStorage.setItem(AUTO_NEXT_KEY, autoNext ? '1' : '0'); } catch (e) {}
+        });
+
         document.getElementById('videoPlayer').addEventListener('ended', () => {
+            if (!autoNext) return;   // v5.17 — default: stop here, viewer picks the next episode
             const available = sources.length ? sources[0].length : 0;
             if (currentEpisode < available) {
                 loadVideo(currentEpisode + 1);
