@@ -70495,7 +70495,7 @@ window.DB_DRAMAS_P3.push(
  "slug": "leave-with-a-broken-heart",
  "platform": "idrama",
  "episodes": 20,
- "cover": "https://watchdramareels.com/k/495423-720.webp",
+ "cover": "https://i.postimg.cc/BbKZdrm7/495423-480.webp",
  "description": "Sophia Summerton has finally decided to walk away—from her job, from her past, and from the man who never loved her back. For four years, she worked as Mortimer Richard’s trusted secretary. By day, she was the perfect professional. By night, she was his secret lover, hidden in the shadows of his…",
  "about": "",
  "genres": [],
